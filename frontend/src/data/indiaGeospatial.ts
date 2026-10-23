@@ -392,3 +392,115 @@ export const LIVE_TRACK_PLOTS: TacticalTrackPlot[] = [
     ]
   }
 ];
+
+// 7. Spatial Threat Density Heatmap Data Points (Weighted Kernel Clusters)
+export interface HeatmapDataPoint {
+  lat: number;
+  lng: number;
+  weight: number; // 0.1 to 1.0 (L1=0.2, L3=0.5, L4=0.85, L5=1.0)
+  sector: string;
+}
+
+export const THREAT_HEATMAP_POINTS: HeatmapDataPoint[] = [
+  // North Sector Heavy Cluster (J&K / Ladakh Frontier)
+  { lat: 34.1450, lng: 74.7300, weight: 0.95, sector: 'Northern Frontier' },
+  { lat: 34.1520, lng: 74.7210, weight: 0.90, sector: 'Northern Frontier' },
+  { lat: 34.1380, lng: 74.7450, weight: 0.85, sector: 'Northern Frontier' },
+  { lat: 34.1610, lng: 74.7100, weight: 0.80, sector: 'Northern Frontier' },
+  { lat: 34.3100, lng: 74.8200, weight: 1.00, sector: 'Northern Frontier' },
+  { lat: 34.2900, lng: 74.8050, weight: 0.88, sector: 'Northern Frontier' },
+  { lat: 34.2200, lng: 74.7600, weight: 0.75, sector: 'Northern Frontier' },
+  { lat: 34.1100, lng: 74.6800, weight: 0.70, sector: 'Northern Frontier' },
+  { lat: 34.1800, lng: 74.7800, weight: 0.82, sector: 'Northern Frontier' },
+  // Western Naval Anchorage Cluster
+  { lat: 18.8900, lng: 72.7600, weight: 0.70, sector: 'Western Maritime' },
+  { lat: 18.9100, lng: 72.7750, weight: 0.65, sector: 'Western Maritime' },
+  { lat: 18.8700, lng: 72.7420, weight: 0.58, sector: 'Western Maritime' },
+  { lat: 18.9300, lng: 72.7900, weight: 0.62, sector: 'Western Maritime' },
+  // Eastern Line Tactical Corridor
+  { lat: 27.5200, lng: 91.8100, weight: 0.55, sector: 'Eastern Forward' },
+  { lat: 27.5600, lng: 91.8400, weight: 0.48, sector: 'Eastern Forward' },
+  { lat: 27.6000, lng: 91.8800, weight: 0.42, sector: 'Eastern Forward' },
+  // Central & Regional Points
+  { lat: 28.5800, lng: 77.2400, weight: 0.25, sector: 'Central Strategic' },
+  { lat: 28.6200, lng: 77.2100, weight: 0.20, sector: 'Central Strategic' },
+  { lat: 9.9312, lng: 76.2673, weight: 0.15, sector: 'Southern Command' }
+];
+
+// Sector-by-Sector Threat Density Metrics
+export const SECTOR_HEATMAP_STATS = [
+  {
+    sector: 'Northern Frontier (Sector 4)',
+    densityScore: 84.6,
+    status: 'CRITICAL HOTSPOT',
+    color: '#ef4444',
+    events24h: 18,
+    l4l5Breaches: 4,
+    peakHour: '02:45 IST',
+    centroid: [34.145, 74.73]
+  },
+  {
+    sector: 'Western Naval Corridor',
+    densityScore: 42.1,
+    status: 'ELEVATED ACTIVITY',
+    color: '#f59e0b',
+    events24h: 7,
+    l4l5Breaches: 1,
+    peakHour: '21:10 IST',
+    centroid: [18.89, 72.76]
+  },
+  {
+    sector: 'Eastern Tawang Frontier',
+    densityScore: 28.4,
+    status: 'GUARDED',
+    color: '#10b981',
+    events24h: 3,
+    l4l5Breaches: 0,
+    peakHour: '16:30 IST',
+    centroid: [27.52, 91.81]
+  },
+  {
+    sector: 'Central Strategic Air Depot',
+    densityScore: 11.2,
+    status: 'ROUTINE',
+    color: '#64748b',
+    events24h: 2,
+    l4l5Breaches: 0,
+    peakHour: '11:00 IST',
+    centroid: [28.58, 77.24]
+  }
+];
+
+// Sensor Coverage & Blind Spot Specs
+export const SENSOR_COVERAGE_SPECS = {
+  totalMonitoredAreaKm2: 184200,
+  opticalCoverageKm2: 4820,
+  radarVolumeKm3: 1250000,
+  activeSensorNodes: 50,
+  coverageEfficiencyPercent: 88.4,
+  blindSpotRatioPercent: 11.6,
+  blindSpots: [
+    {
+      id: 'BSP-NORTH-01',
+      sector: 'North Sector 4 (Pir Panjal Ridge)',
+      reason: 'Terrain masking below 1,200m elevation',
+      severity: 'HIGH RISK',
+      mitigation: 'UAV VisDrone Patrol dispatched'
+    },
+    {
+      id: 'BSP-WEST-02',
+      sector: 'Western Outer Anchorage',
+      reason: 'Sea clutter & low-angle surface ducting',
+      severity: 'MEDIUM',
+      mitigation: 'CSR-01 Doppler filter active'
+    },
+    {
+      id: 'BSP-EAST-03',
+      sector: 'Eastern Ravine Pass',
+      reason: 'Dense canopy optical obstruction',
+      severity: 'GUARDED',
+      mitigation: 'Acoustic Tripwire Array #7 deployed'
+    }
+  ]
+};
+

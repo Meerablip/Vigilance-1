@@ -8,6 +8,7 @@ import {
   GEOFENCES,
   INDIA_SOI_BOUNDARY_COORDS,
   LIVE_TRACK_PLOTS,
+  THREAT_HEATMAP_POINTS,
   type TacticalDefenseStation,
   type TacticalSensorNode,
   type TacticalIncidentMarker,
@@ -59,7 +60,9 @@ export const PrecisionIndiaMap: React.FC<PrecisionIndiaMapProps> = ({
     sensorNodes: true,
     geofences: true,
     threats: true,
-    soiBoundary: true
+    soiBoundary: true,
+    threatHeatmap: true,
+    coverageCones: true
   });
 
   // Active Selections
@@ -230,6 +233,49 @@ export const PrecisionIndiaMap: React.FC<PrecisionIndiaMapProps> = ({
           'line-opacity': 0.9
         }
       });
+
+      // 3. Add Spatial Threat Density Heatmap Layer
+      const heatmapFeatures = THREAT_HEATMAP_POINTS.map((pt) => ({
+        type: 'Feature' as const,
+        properties: {
+          weight: pt.weight,
+          sector: pt.sector
+        },
+        geometry: {
+          type: 'Point' as const,
+          coordinates: [pt.lng, pt.lat]
+        }
+      }));
+
+      map.addSource('threat-heatmap-source', {
+        type: 'geojson',
+        data: {
+          type: 'FeatureCollection',
+          features: heatmapFeatures
+        }
+      });
+
+      map.addLayer({
+        id: 'threat-heatmap-layer',
+        type: 'heatmap',
+        source: 'threat-heatmap-source',
+        paint: {
+          'heatmap-weight': ['get', 'weight'],
+          'heatmap-intensity': 2.0,
+          'heatmap-color': [
+            'interpolate',
+            ['linear'],
+            ['heatmap-density'],
+            0, 'rgba(0, 0, 0, 0)',
+            0.15, 'rgba(56, 189, 248, 0.4)',
+            0.4, 'rgba(234, 179, 8, 0.6)',
+            0.7, 'rgba(234, 88, 12, 0.8)',
+            1.0, 'rgba(239, 68, 68, 0.95)'
+          ],
+          'heatmap-radius': ['interpolate', ['linear'], ['zoom'], 4, 35, 8, 70, 14, 120],
+          'heatmap-opacity': 0.72
+        }
+      });
     });
 
     return () => {
@@ -328,6 +374,51 @@ export const PrecisionIndiaMap: React.FC<PrecisionIndiaMapProps> = ({
           }
         });
       }
+
+      // Re-add Threat Density Heatmap
+      if (!map.getSource('threat-heatmap-source')) {
+        const heatmapFeatures = THREAT_HEATMAP_POINTS.map((pt) => ({
+          type: 'Feature' as const,
+          properties: {
+            weight: pt.weight,
+            sector: pt.sector
+          },
+          geometry: {
+            type: 'Point' as const,
+            coordinates: [pt.lng, pt.lat]
+          }
+        }));
+
+        map.addSource('threat-heatmap-source', {
+          type: 'geojson',
+          data: {
+            type: 'FeatureCollection',
+            features: heatmapFeatures
+          }
+        });
+
+        map.addLayer({
+          id: 'threat-heatmap-layer',
+          type: 'heatmap',
+          source: 'threat-heatmap-source',
+          paint: {
+            'heatmap-weight': ['get', 'weight'],
+            'heatmap-intensity': 2.0,
+            'heatmap-color': [
+              'interpolate',
+              ['linear'],
+              ['heatmap-density'],
+              0, 'rgba(0, 0, 0, 0)',
+              0.15, 'rgba(56, 189, 248, 0.4)',
+              0.4, 'rgba(234, 179, 8, 0.6)',
+              0.7, 'rgba(234, 88, 12, 0.8)',
+              1.0, 'rgba(239, 68, 68, 0.95)'
+            ],
+            'heatmap-radius': ['interpolate', ['linear'], ['zoom'], 4, 35, 8, 70, 14, 120],
+            'heatmap-opacity': 0.72
+          }
+        });
+      }
     });
   };
 
@@ -347,6 +438,9 @@ export const PrecisionIndiaMap: React.FC<PrecisionIndiaMapProps> = ({
     }
     if (map.getLayer('geofence-stroke')) {
       map.setLayoutProperty('geofence-stroke', 'visibility', layers.geofences ? 'visible' : 'none');
+    }
+    if (map.getLayer('threat-heatmap-layer')) {
+      map.setLayoutProperty('threat-heatmap-layer', 'visibility', layers.threatHeatmap ? 'visible' : 'none');
     }
   }, [layers]);
 
@@ -502,6 +596,60 @@ export const PrecisionIndiaMap: React.FC<PrecisionIndiaMapProps> = ({
           ctx.moveTo(pt.x, pt.y);
           ctx.lineTo(vx, vy);
           ctx.stroke();
+
+          ctx.restore();
+        });
+      }
+
+      // 3. Render Directional Sensor Coverage Cones (Optical/Thermal camera wedges)
+      if (layers.coverageCones) {
+        SENSOR_NODES.forEach((sensor) => {
+          if (!sensor.fovBearingDeg || !sensor.fovSpreadDeg) return;
+          const pt = map.project([sensor.coordinates[1], sensor.coordinates[0]]);
+          if (pt.x < -150 || pt.x > width + 150 || pt.y < -150 || pt.y > height + 150) return;
+
+          const center = map.getCenter();
+          const p1 = map.project([center.lng, center.lat]);
+          const p2 = map.project([center.lng + 0.1, center.lat]);
+          const pixelsPerDegree = Math.abs(p2.x - p1.x);
+          const pixelsPerKm = pixelsPerDegree / 11.1;
+          const coneRadiusPixels = Math.max(35, Math.min(130, sensor.rangeKm * pixelsPerKm));
+
+          // Bearing angle: 0 is North (-PI/2 in canvas radians)
+          const centerRad = ((sensor.fovBearingDeg - 90) * Math.PI) / 180;
+          const spreadRad = (sensor.fovSpreadDeg * Math.PI) / 180;
+          const startRad = centerRad - spreadRad / 2;
+          const endRad = centerRad + spreadRad / 2;
+
+          ctx.save();
+          const isThermal = sensor.sensorType === 'thermal';
+          ctx.fillStyle = isThermal ? 'rgba(239, 68, 68, 0.14)' : 'rgba(16, 185, 129, 0.14)';
+          ctx.strokeStyle = isThermal ? 'rgba(239, 68, 68, 0.75)' : 'rgba(16, 185, 129, 0.75)';
+          ctx.lineWidth = 1.2;
+          ctx.setLineDash([3, 2]);
+
+          ctx.beginPath();
+          ctx.moveTo(pt.x, pt.y);
+          ctx.arc(pt.x, pt.y, coneRadiusPixels, startRad, endRad);
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+
+          // Center Boresight Line
+          ctx.strokeStyle = isThermal ? 'rgba(239, 68, 68, 0.85)' : 'rgba(16, 185, 129, 0.85)';
+          ctx.lineWidth = 1;
+          ctx.setLineDash([]);
+          ctx.beginPath();
+          ctx.moveTo(pt.x, pt.y);
+          ctx.lineTo(pt.x + Math.cos(centerRad) * coneRadiusPixels, pt.y + Math.sin(centerRad) * coneRadiusPixels);
+          ctx.stroke();
+
+          // Sensor Label along centerline
+          ctx.fillStyle = 'rgba(248, 250, 252, 0.85)';
+          ctx.font = '8px monospace';
+          const labelX = pt.x + Math.cos(centerRad) * (coneRadiusPixels + 6);
+          const labelY = pt.y + Math.sin(centerRad) * (coneRadiusPixels + 6);
+          ctx.fillText(`${sensor.id} [${sensor.fovSpreadDeg}° FOV • ${sensor.rangeKm}km]`, labelX, labelY);
 
           ctx.restore();
         });
@@ -774,6 +922,8 @@ export const PrecisionIndiaMap: React.FC<PrecisionIndiaMapProps> = ({
           gap: '6px'
         }}>
           {[
+            { key: 'threatHeatmap' as const, label: 'HEATMAP' },
+            { key: 'coverageCones' as const, label: 'FOV CONES' },
             { key: 'radarRings' as const, label: 'RADAR RINGS' },
             { key: 'liveTracks' as const, label: 'LIVE TRACKS' },
             { key: 'sensorNodes' as const, label: 'SENSORS' },

@@ -1,11 +1,24 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { 
   Play,
   Pause,
-  Layers
+  Layers,
+  Flame,
+  Compass,
+  Radio,
+  Eye,
+  Camera,
+  ClipboardCheck
 } from 'lucide-react';
-import type { WidgetConfig, ThreatLevel, PageId } from '../../types';
+import type { WidgetConfig, PageId } from '../../types';
 import { PrecisionIndiaMap } from '../map/PrecisionIndiaMap';
+import { 
+  SECTOR_HEATMAP_STATS, 
+  SENSOR_COVERAGE_SPECS, 
+  SENSOR_NODES,
+  LIVE_TRACK_PLOTS,
+  ACTIVE_INCIDENTS 
+} from '../../data/indiaGeospatial';
 
 interface WidgetContentRendererProps {
   widget: WidgetConfig;
@@ -20,6 +33,9 @@ export const WidgetContentRenderer: React.FC<WidgetContentRendererProps> = ({
 }) => {
   const [isPlaying, setIsPlaying] = useState(true);
   const [showAIOverlay, setShowAIOverlay] = useState(true);
+  const [heatmapTimeRange, setHeatmapTimeRange] = useState<'1h' | '6h' | '24h' | '7d'>('24h');
+  const [droneMode, setDroneMode] = useState<'EO' | 'IR'>('EO');
+  const [activeCoverageTab, setActiveCoverageTab] = useState<'cones' | 'blindspots'>('cones');
 
   switch (widget.type) {
     case 'regional_map':
@@ -36,10 +52,255 @@ export const WidgetContentRenderer: React.FC<WidgetContentRendererProps> = ({
         </div>
       );
 
+    // 1. Threat Density Heatmap Module
+    case 'threat_heatmap':
+      return (
+        <div style={{ height: '100%', display: 'flex', flexDirection: 'column', padding: '10px', gap: '8px', background: 'var(--bg-canvas)' }}>
+          {/* Header Controls */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Flame size={13} color="#f97316" />
+              <span style={{ fontSize: '10px', fontWeight: 700, color: '#f8fafc', letterSpacing: '0.04em' }}>
+                SPATIAL KERNEL DENSITY (HOTSPOTS)
+              </span>
+            </div>
+
+            {/* Time decay selector */}
+            <div style={{ display: 'flex', gap: '3px' }}>
+              {(['1h', '6h', '24h', '7d'] as const).map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setHeatmapTimeRange(t)}
+                  style={{
+                    background: heatmapTimeRange === t ? '#0284c7' : 'rgba(30, 41, 59, 0.6)',
+                    border: `1px solid ${heatmapTimeRange === t ? '#38bdf8' : 'rgba(51, 65, 85, 0.5)'}`,
+                    color: heatmapTimeRange === t ? '#fff' : '#94a3b8',
+                    padding: '1px 5px',
+                    borderRadius: '2px',
+                    fontSize: '8px',
+                    fontWeight: 700,
+                    cursor: 'pointer'
+                  }}
+                >
+                  {t.toUpperCase()}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Sector Hotspot Density Bars */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flex: 1, overflowY: 'auto' }}>
+            {SECTOR_HEATMAP_STATS.map((stat) => (
+              <div
+                key={stat.sector}
+                style={{
+                  background: 'var(--bg-surface-elevated)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: '2px',
+                  padding: '6px 8px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '4px'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: stat.color }} />
+                    <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{stat.sector}</span>
+                  </div>
+                  <span style={{ fontSize: '9px', fontWeight: 800, color: stat.color }}>
+                    {stat.densityScore}% ({stat.status})
+                  </span>
+                </div>
+
+                {/* Density Bar */}
+                <div style={{ height: '5px', width: '100%', background: 'rgba(15, 23, 42, 0.8)', borderRadius: '1px', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: `${stat.densityScore}%`, backgroundColor: stat.color }} />
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9px', color: 'var(--text-muted)' }}>
+                  <span>24h Events: <strong style={{ color: '#f8fafc' }}>{stat.events24h}</strong> (L4/L5: {stat.l4l5Breaches})</span>
+                  <span>Peak: {stat.peakHour}</span>
+                  <button
+                    onClick={() => onNavigate('map')}
+                    style={{ background: 'none', border: 'none', color: '#38bdf8', cursor: 'pointer', fontSize: '9px', padding: 0 }}
+                  >
+                    Focus Map ↗
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Gradient Scale Legend */}
+          <div style={{
+            background: 'var(--bg-card)',
+            borderTop: '1px solid var(--border-subtle)',
+            padding: '5px 8px',
+            borderRadius: '2px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            fontSize: '9px',
+            color: 'var(--text-muted)'
+          }}>
+            <span>DENSITY INDEX:</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span>LOW</span>
+              <div style={{
+                width: '80px',
+                height: '6px',
+                background: 'linear-gradient(to right, #38bdf8, #eab308, #ea580c, #ef4444)',
+                borderRadius: '1px'
+              }} />
+              <span style={{ color: '#ef4444', fontWeight: 700 }}>CRITICAL</span>
+            </div>
+          </div>
+        </div>
+      );
+
+    // 2. Sensor Coverage Cones & Blind Spot Analysis Module
+    case 'sensor_coverage':
+      return (
+        <div style={{ height: '100%', display: 'flex', flexDirection: 'column', padding: '10px', gap: '8px', background: 'var(--bg-canvas)' }}>
+          {/* Header Controls */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Compass size={13} color="#2dd4bf" />
+              <span style={{ fontSize: '10px', fontWeight: 700, color: '#f8fafc', letterSpacing: '0.04em' }}>
+                SENSOR COVERAGE & OCCLUSION ENVELOPE
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', gap: '3px' }}>
+              <button
+                onClick={() => setActiveCoverageTab('cones')}
+                style={{
+                  background: activeCoverageTab === 'cones' ? '#0d9488' : 'rgba(30, 41, 59, 0.6)',
+                  border: `1px solid ${activeCoverageTab === 'cones' ? '#2dd4bf' : 'rgba(51, 65, 85, 0.5)'}`,
+                  color: activeCoverageTab === 'cones' ? '#fff' : '#94a3b8',
+                  padding: '1px 6px',
+                  borderRadius: '2px',
+                  fontSize: '8px',
+                  fontWeight: 700,
+                  cursor: 'pointer'
+                }}
+              >
+                FOV CONES
+              </button>
+              <button
+                onClick={() => setActiveCoverageTab('blindspots')}
+                style={{
+                  background: activeCoverageTab === 'blindspots' ? '#dc2626' : 'rgba(30, 41, 59, 0.6)',
+                  border: `1px solid ${activeCoverageTab === 'blindspots' ? '#ef4444' : 'rgba(51, 65, 85, 0.5)'}`,
+                  color: activeCoverageTab === 'blindspots' ? '#fff' : '#94a3b8',
+                  padding: '1px 6px',
+                  borderRadius: '2px',
+                  fontSize: '8px',
+                  fontWeight: 700,
+                  cursor: 'pointer'
+                }}
+              >
+                BLIND SPOTS (3)
+              </button>
+            </div>
+          </div>
+
+          {/* Efficiency Gauge */}
+          <div style={{
+            background: 'var(--bg-surface-elevated)',
+            border: '1px solid var(--border-subtle)',
+            borderRadius: '2px',
+            padding: '6px 8px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            fontSize: '10px'
+          }}>
+            <div>
+              <span style={{ color: 'var(--text-muted)' }}>SURVEILLANCE EFFICIENCY: </span>
+              <strong style={{ color: '#10b981' }}>{SENSOR_COVERAGE_SPECS.coverageEfficiencyPercent}%</strong>
+            </div>
+            <div>
+              <span style={{ color: 'var(--text-muted)' }}>TERRAIN BLIND SPOTS: </span>
+              <strong style={{ color: '#ef4444' }}>{SENSOR_COVERAGE_SPECS.blindSpotRatioPercent}%</strong>
+            </div>
+          </div>
+
+          {/* Tab Content: FOV Cones List vs Blind Spots */}
+          <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '5px' }}>
+            {activeCoverageTab === 'cones' ? (
+              SENSOR_NODES.map((sensor) => (
+                <div
+                  key={sensor.id}
+                  style={{
+                    background: 'var(--bg-card)',
+                    border: '1px solid var(--border-subtle)',
+                    borderRadius: '2px',
+                    padding: '5px 8px',
+                    fontSize: '9px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div style={{
+                      background: sensor.sensorType === 'thermal' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(16, 185, 129, 0.15)',
+                      border: `1px solid ${sensor.sensorType === 'thermal' ? '#ef4444' : '#10b981'}`,
+                      borderRadius: '2px',
+                      padding: '2px'
+                    }}>
+                      {sensor.sensorType === 'cctv' && <Camera size={10} color="#10b981" />}
+                      {sensor.sensorType === 'thermal' && <Flame size={10} color="#ef4444" />}
+                      {sensor.sensorType === 'radar' && <Radio size={10} color="#38bdf8" />}
+                    </div>
+                    <div>
+                      <div style={{ fontWeight: 700, color: '#f8fafc' }}>{sensor.name}</div>
+                      <div style={{ color: 'var(--text-muted)' }}>ID: {sensor.id} • {sensor.status.toUpperCase()}</div>
+                    </div>
+                  </div>
+
+                  <div style={{ textAlign: 'right', fontFamily: 'monospace' }}>
+                    <div style={{ color: '#38bdf8' }}>
+                      {sensor.fovSpreadDeg ? `${sensor.fovSpreadDeg}° FOV @ ${sensor.fovBearingDeg}°` : '360° VOLUME'}
+                    </div>
+                    <div style={{ color: 'var(--text-muted)' }}>RANGE: {sensor.rangeKm} KM</div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              SENSOR_COVERAGE_SPECS.blindSpots.map((b) => (
+                <div
+                  key={b.id}
+                  style={{
+                    background: 'rgba(239, 68, 68, 0.08)',
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    borderRadius: '2px',
+                    padding: '6px 8px',
+                    fontSize: '9px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '3px'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <strong style={{ color: '#ef4444' }}>{b.id} • {b.severity}</strong>
+                    <span style={{ color: 'var(--text-muted)' }}>{b.sector}</span>
+                  </div>
+                  <div style={{ color: '#cbd5e1' }}>OCCLUSION: {b.reason}</div>
+                  <div style={{ color: '#10b981', fontWeight: 600 }}>TACTICAL MITIGATION: {b.mitigation}</div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      );
+
+    // 3. Live Optical Surveillance Feed
     case 'cctv_feeds':
       return (
         <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-          {/* Feed Toolbar */}
           <div style={{
             height: '28px',
             background: 'var(--bg-surface-elevated)',
@@ -50,37 +311,32 @@ export const WidgetContentRenderer: React.FC<WidgetContentRendererProps> = ({
             padding: '0 8px'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '10px' }}>
-              <span style={{
-                width: '6px',
-                height: '6px',
-                borderRadius: '50%',
-                background: 'var(--threat-l5)'
-              }} />
-              <strong style={{ color: 'var(--text-primary)' }}>CAM-NORTH-04</strong>
+              <span className="status-indicator status-indicator-healthy" />
+              <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>CAM-NORTH-04</span>
               <span style={{ color: 'var(--text-muted)' }}>| VisDrone Tactical Ingest</span>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <button
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <button 
                 onClick={() => setShowAIOverlay(!showAIOverlay)}
                 style={{
-                  background: showAIOverlay ? 'var(--bg-card-hover)' : 'transparent',
-                  border: '1px solid var(--border-focus)',
-                  color: showAIOverlay ? 'var(--text-primary)' : 'var(--text-muted)',
-                  fontSize: '9px',
-                  padding: '2px 5px',
+                  background: showAIOverlay ? 'var(--bg-canvas)' : 'transparent',
+                  border: '1px solid var(--border-subtle)',
                   borderRadius: '2px',
+                  color: showAIOverlay ? 'var(--accent-tactical-active)' : 'var(--text-muted)',
+                  fontSize: '9px',
+                  padding: '2px 6px',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '3px'
+                  gap: '4px'
                 }}
               >
                 <Layers size={10} />
                 <span>YOLO Overlay</span>
               </button>
 
-              <button
+              <button 
                 onClick={() => setIsPlaying(!isPlaying)}
                 style={{
                   background: 'none',
@@ -90,49 +346,29 @@ export const WidgetContentRenderer: React.FC<WidgetContentRendererProps> = ({
                   padding: '2px'
                 }}
               >
-                {isPlaying ? <Pause size={11} /> : <Play size={11} />}
+                {isPlaying ? <Pause size={12} /> : <Play size={12} />}
               </button>
             </div>
           </div>
 
-          {/* Video / Stream Viewer - Clean Hairline Overlays, Zero Glowing Blur */}
           <div style={{
             flex: 1,
-            background: '#040608',
+            background: '#04070c',
             position: 'relative',
             overflow: 'hidden',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center'
           }}>
-            <div style={{
-              width: '100%',
-              height: '100%',
-              background: '#0a0d14',
-              position: 'relative'
-            }}>
-              {/* Hairline Center Reticle */}
-              <div style={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                width: '20px',
-                height: '20px',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-                pointerEvents: 'none'
-              }} />
-
-              {/* Detections - Clean Crisp Hairline Boxes */}
+            <div style={{ width: '100%', height: '100%', position: 'relative' }}>
               {showAIOverlay && (
                 <>
-                  {/* Person */}
                   <div style={{
                     position: 'absolute',
                     top: '32%',
                     left: '42%',
-                    width: '54px',
-                    height: '105px',
+                    width: '65px',
+                    height: '110px',
                     border: '1px solid var(--threat-l4)',
                     pointerEvents: 'none'
                   }}>
@@ -154,7 +390,6 @@ export const WidgetContentRenderer: React.FC<WidgetContentRendererProps> = ({
                     </div>
                   </div>
 
-                  {/* Vehicle */}
                   <div style={{
                     position: 'absolute',
                     top: '48%',
@@ -184,7 +419,6 @@ export const WidgetContentRenderer: React.FC<WidgetContentRendererProps> = ({
                 </>
               )}
 
-              {/* Timestamp & Model OSD */}
               <div style={{
                 position: 'absolute',
                 bottom: '6px',
@@ -203,6 +437,139 @@ export const WidgetContentRenderer: React.FC<WidgetContentRendererProps> = ({
         </div>
       );
 
+    // 4. UAV / Aerial Recon Stream Module
+    case 'drone_feeds':
+      return (
+        <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: '#050810' }}>
+          <div style={{
+            height: '28px',
+            background: 'var(--bg-surface-elevated)',
+            borderBottom: '1px solid var(--border-subtle)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '0 8px',
+            fontSize: '10px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Eye size={12} color="#10b981" />
+              <strong style={{ color: '#f8fafc' }}>UAV RECON FALCON-02</strong>
+              <span style={{ color: 'var(--text-muted)' }}>ALT 450M • BATT 82%</span>
+            </div>
+
+            <div style={{ display: 'flex', gap: '3px' }}>
+              <button
+                onClick={() => setDroneMode('EO')}
+                style={{
+                  background: droneMode === 'EO' ? '#0284c7' : 'transparent',
+                  border: `1px solid ${droneMode === 'EO' ? '#38bdf8' : '#334155'}`,
+                  color: droneMode === 'EO' ? '#fff' : '#94a3b8',
+                  padding: '1px 5px',
+                  borderRadius: '2px',
+                  fontSize: '8px',
+                  fontWeight: 700,
+                  cursor: 'pointer'
+                }}
+              >
+                EO OPTICAL
+              </button>
+              <button
+                onClick={() => setDroneMode('IR')}
+                style={{
+                  background: droneMode === 'IR' ? '#ea580c' : 'transparent',
+                  border: `1px solid ${droneMode === 'IR' ? '#f97316' : '#334155'}`,
+                  color: droneMode === 'IR' ? '#fff' : '#94a3b8',
+                  padding: '1px 5px',
+                  borderRadius: '2px',
+                  fontSize: '8px',
+                  fontWeight: 700,
+                  cursor: 'pointer'
+                }}
+              >
+                FLIR IR
+              </button>
+            </div>
+          </div>
+
+          <div style={{ flex: 1, position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {/* Artificial Horizon Lines */}
+            <div style={{ position: 'absolute', width: '120px', height: '1px', background: 'rgba(16, 185, 129, 0.4)', pointerEvents: 'none' }} />
+            <div style={{ position: 'absolute', width: '1px', height: '120px', background: 'rgba(16, 185, 129, 0.4)', pointerEvents: 'none' }} />
+
+            {/* Target Reticle */}
+            <div style={{
+              width: '60px',
+              height: '60px',
+              border: '1.5px dashed #ea580c',
+              borderRadius: '2px',
+              position: 'relative',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <span style={{ fontSize: '8px', color: '#ea580c', fontWeight: 800, position: 'absolute', top: '-14px' }}>
+                LOCK: CONVOY 0.94
+              </span>
+            </div>
+
+            <div style={{
+              position: 'absolute',
+              bottom: '6px',
+              right: '6px',
+              fontSize: '9px',
+              fontFamily: 'monospace',
+              color: '#10b981',
+              background: 'rgba(0,0,0,0.7)',
+              padding: '2px 5px'
+            }}>
+              POS: 34.1450°N 74.7300°E • GIMBAL -28°
+            </div>
+          </div>
+        </div>
+      );
+
+    // 5. Ground Radar Observation Stream Module
+    case 'radar_summary':
+      return (
+        <div style={{ height: '100%', display: 'flex', flexDirection: 'column', padding: '8px', gap: '6px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Radio size={12} color="#38bdf8" />
+              <strong style={{ color: '#f8fafc' }}>DOPPLER RADAR OBSERVATIONS ({LIVE_TRACK_PLOTS.length} ACTIVE)</strong>
+            </div>
+            <span style={{ color: '#10b981', fontWeight: 600 }}>STN-NORTH-01 ONLINE</span>
+          </div>
+
+          <div style={{ flex: 1, overflowY: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '9px' }}>
+              <thead>
+                <tr style={{ background: 'var(--bg-surface-elevated)', color: 'var(--text-muted)' }}>
+                  <th style={{ padding: '4px', textAlign: 'left' }}>TRACK ID</th>
+                  <th style={{ padding: '4px', textAlign: 'left' }}>CALLSIGN</th>
+                  <th style={{ padding: '4px', textAlign: 'left' }}>ALTITUDE</th>
+                  <th style={{ padding: '4px', textAlign: 'left' }}>SPEED</th>
+                  <th style={{ padding: '4px', textAlign: 'right' }}>SQUAWK</th>
+                </tr>
+              </thead>
+              <tbody>
+                {LIVE_TRACK_PLOTS.map((trk) => (
+                  <tr key={trk.id} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                    <td style={{ padding: '4px', fontWeight: 700, color: trk.affiliation === 'hostile' ? '#ef4444' : '#10b981' }}>
+                      {trk.id}
+                    </td>
+                    <td style={{ padding: '4px', color: '#cbd5e1' }}>{trk.callsign.split(' ')[0]}</td>
+                    <td style={{ padding: '4px', color: '#94a3b8' }}>{trk.altitudeFt ? `${trk.altitudeFt} FT` : 'SURF'}</td>
+                    <td style={{ padding: '4px', color: '#f8fafc' }}>{trk.speedKts} KT</td>
+                    <td style={{ padding: '4px', textAlign: 'right', fontFamily: 'monospace' }}>{trk.squawkCode}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      );
+
+    // 6. Active Alert Queue & Critical Threats
     case 'alert_queue':
     case 'highest_threats':
       return (
@@ -219,13 +586,7 @@ export const WidgetContentRenderer: React.FC<WidgetContentRendererProps> = ({
                 </tr>
               </thead>
               <tbody>
-                {[
-                  { id: 'INC-2026-9041', level: 'L4' as ThreatLevel, loc: 'North Sector 4', flow: 'HITL Pending', conf: 91 },
-                  { id: 'INC-2026-9039', level: 'L3' as ThreatLevel, loc: 'West Naval Gate', flow: 'Awaiting Auth', conf: 84 },
-                  { id: 'INC-2026-9037', level: 'L2' as ThreatLevel, loc: 'East Checkpoint', flow: 'AI Dispatched', conf: 96 },
-                  { id: 'INC-2026-9032', level: 'L1' as ThreatLevel, loc: 'South Station', flow: 'Routine Logged', conf: 98 },
-                  { id: 'INC-2026-9029', level: 'L5' as ThreatLevel, loc: 'High Vault A', flow: 'Dual Sign-off', conf: 93 }
-                ].map((inc) => (
+                {ACTIVE_INCIDENTS.map((inc) => (
                   <tr 
                     key={inc.id}
                     onClick={() => {
@@ -240,21 +601,21 @@ export const WidgetContentRenderer: React.FC<WidgetContentRendererProps> = ({
                     onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                   >
                     <td style={{ padding: '5px 7px' }}>
-                      <span className={`badge-threat badge-threat-${inc.level.toLowerCase()}`}>
-                        {inc.level}
+                      <span className={`badge-threat badge-threat-${inc.threatLevel.toLowerCase()}`}>
+                        {inc.threatLevel}
                       </span>
                     </td>
                     <td style={{ padding: '5px 7px', fontWeight: 600, color: 'var(--text-primary)' }}>
                       {inc.id}
                     </td>
                     <td style={{ padding: '5px 7px', color: 'var(--text-secondary)' }}>
-                      {inc.loc}
+                      {inc.title.substring(0, 24)}...
                     </td>
                     <td style={{ padding: '5px 7px', color: 'var(--text-muted)' }}>
-                      {inc.flow}
+                      {inc.workflowStatus}
                     </td>
                     <td style={{ padding: '5px 7px', textAlign: 'right', fontFamily: 'monospace', color: 'var(--text-secondary)' }}>
-                      {inc.conf}%
+                      {inc.confidence}%
                     </td>
                   </tr>
                 ))}
@@ -264,6 +625,69 @@ export const WidgetContentRenderer: React.FC<WidgetContentRendererProps> = ({
         </div>
       );
 
+    // 7. Authorization Desk Module
+    case 'auth_queue_card':
+      return (
+        <div style={{ height: '100%', padding: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <ClipboardCheck size={13} color="#f59e0b" />
+              <strong style={{ fontSize: '11px', color: '#f8fafc' }}>COMMANDER AUTHORIZATION DESK</strong>
+            </div>
+            <span style={{ fontSize: '9px', background: '#f59e0b', color: '#000', padding: '1px 5px', fontWeight: 800 }}>
+              ACTION REQUIRED
+            </span>
+          </div>
+
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', padding: '8px', borderRadius: '2px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span className="badge-threat badge-threat-l4">L4 HIGH</span>
+              <strong style={{ fontSize: '10px', color: '#f8fafc' }}>INC-2026-9041</strong>
+            </div>
+            <div style={{ fontSize: '10px', color: '#cbd5e1' }}>
+              Unidentified Convoy Breach in Northern Zone Beta
+            </div>
+            <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>
+              Confidence: 91.4% • Deadline: 12m remaining
+            </div>
+
+            <div style={{ display: 'flex', gap: '4px', marginTop: '6px' }}>
+              <button
+                onClick={() => alert('Dispatch Authorized by Chief Commander Meera Chaudhari. Logged in Neon DB.')}
+                style={{
+                  flex: 1,
+                  background: '#10b981',
+                  color: '#000',
+                  fontWeight: 700,
+                  border: 'none',
+                  padding: '4px',
+                  borderRadius: '2px',
+                  fontSize: '9px',
+                  cursor: 'pointer'
+                }}
+              >
+                Approve Dispatch
+              </button>
+              <button
+                onClick={() => alert('Escalated to National Command Joint Operations Center.')}
+                style={{
+                  background: 'transparent',
+                  border: '1px solid #475569',
+                  color: '#cbd5e1',
+                  padding: '4px 6px',
+                  borderRadius: '2px',
+                  fontSize: '9px',
+                  cursor: 'pointer'
+                }}
+              >
+                Escalate
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+
+    // 8. Policy Distribution & Analytics
     case 'fused_summary':
     case 'analytics_card':
       return (
@@ -306,13 +730,14 @@ export const WidgetContentRenderer: React.FC<WidgetContentRendererProps> = ({
             fontSize: '9px',
             color: 'var(--text-muted)'
           }}>
-            <div>Automated Handling: <strong style={{ color: 'var(--status-healthy)' }}>84.5%</strong></div>
+            <div>Automated: <strong style={{ color: 'var(--status-healthy)' }}>84.5%</strong></div>
             <div>Escalation: <strong style={{ color: 'var(--threat-l3)' }}>15.5%</strong></div>
-            <div>Policy: <strong style={{ color: 'var(--text-secondary)' }}>V-1.0</strong></div>
+            <div>Policy: <strong style={{ color: 'var(--text-secondary)' }}>VIGILANCE-DEMO-2.4</strong></div>
           </div>
         </div>
       );
 
+    // 9. System Health Card
     case 'system_health_card':
       return (
         <div style={{ height: '100%', padding: '10px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -328,12 +753,12 @@ export const WidgetContentRenderer: React.FC<WidgetContentRendererProps> = ({
             </div>
 
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', padding: '6px', borderRadius: '2px' }}>
-              <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Database Latency</div>
+              <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Database (Neon)</div>
               <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--status-healthy)' }}>18 ms</div>
             </div>
 
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', padding: '6px', borderRadius: '2px' }}>
-              <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Audit Log</div>
+              <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Audit Log Ledger</div>
               <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--status-healthy)' }}>VERIFIED</div>
             </div>
           </div>
@@ -343,7 +768,7 @@ export const WidgetContentRenderer: React.FC<WidgetContentRendererProps> = ({
     default:
       return (
         <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '12px', color: 'var(--text-muted)', fontSize: '10px' }}>
-          Streaming: {widget.title}
+          Active Module: {widget.title}
         </div>
       );
   }
