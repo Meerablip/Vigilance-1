@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { 
   X, 
   Search, 
-  Plus, 
   Map, 
   Video, 
   AlertTriangle, 
@@ -15,17 +14,17 @@ import {
   ShieldAlert, 
   Eye, 
   Compass, 
-  Repeat
+  Repeat,
+  GripVertical
 } from 'lucide-react';
-import type { WidgetConfig, WidgetCategory } from '../../types';
+import type { WidgetCategory } from '../../types';
 
 interface WidgetLibraryProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddWidget: (widget: Omit<WidgetConfig, 'id' | 'x' | 'y'>) => void;
 }
 
-interface AvailableWidgetDef {
+export interface AvailableWidgetDef {
   type: string;
   title: string;
   description: string;
@@ -35,38 +34,37 @@ interface AvailableWidgetDef {
   icon: React.ComponentType<{ size: number; color?: string }>;
 }
 
-const availableWidgets: AvailableWidgetDef[] = [
+export const availableWidgets: AvailableWidgetDef[] = [
   // Situational Awareness
-  { type: 'regional_map', title: 'Regional Threat Map', description: 'Interactive MapLibre GIS tactical map with Indian defense sectors, sensor positions, and geofence overlays.', category: 'situational_awareness', defaultW: 18, defaultH: 14, icon: Map },
-  { type: 'threat_heatmap', title: 'Threat Density Heatmap', description: 'Spatial kernel density visualization of active and historical perimeter events.', category: 'situational_awareness', defaultW: 14, defaultH: 10, icon: Flame },
-  { type: 'sensor_coverage', title: 'Sensor Coverage & Blindspots', description: 'Field-of-view cones and overlapping radar/optical coverage zones.', category: 'situational_awareness', defaultW: 12, defaultH: 9, icon: Compass },
+  { type: 'regional_map', title: 'Regional Threat Map', description: 'GIS tactical map with defense sectors, sensor positions, and geofences.', category: 'situational_awareness', defaultW: 22, defaultH: 16, icon: Map },
+  { type: 'threat_heatmap', title: 'Threat Density Heatmap', description: 'Spatial kernel density of active and historical perimeter events.', category: 'situational_awareness', defaultW: 16, defaultH: 12, icon: Flame },
+  { type: 'sensor_coverage', title: 'Sensor Coverage Cones', description: 'Field-of-view cones and overlapping radar/optical coverage zones.', category: 'situational_awareness', defaultW: 14, defaultH: 10, icon: Compass },
 
   // Alerts & Decisions
-  { type: 'alert_queue', title: 'Active Alert Queue', description: 'Live prioritized triage queue of classified incidents with one-click acknowledgment.', category: 'alerts_decisions', defaultW: 16, defaultH: 12, icon: AlertTriangle },
-  { type: 'highest_threats', title: 'Critical L4/L5 Threats', description: 'High-severity alerts requiring immediate supervisory inspection or escalation.', category: 'alerts_decisions', defaultW: 14, defaultH: 10, icon: ShieldAlert },
-  { type: 'auth_queue_card', title: 'Authorization Desk', description: 'Decisions requiring human approval (Approve, Dismiss, Escalate) with written rationale.', category: 'alerts_decisions', defaultW: 15, defaultH: 11, icon: ClipboardCheck },
+  { type: 'alert_queue', title: 'Active Alert Queue', description: 'Live prioritized triage queue of classified incidents with acknowledgment.', category: 'alerts_decisions', defaultW: 18, defaultH: 13, icon: AlertTriangle },
+  { type: 'highest_threats', title: 'Critical L4/L5 Threats', description: 'High-severity alerts requiring immediate supervisory inspection.', category: 'alerts_decisions', defaultW: 15, defaultH: 11, icon: ShieldAlert },
+  { type: 'auth_queue_card', title: 'Authorization Desk', description: 'Decisions requiring human approval (Approve, Dismiss, Escalate).', category: 'alerts_decisions', defaultW: 16, defaultH: 12, icon: ClipboardCheck },
 
   // Live Monitoring
-  { type: 'cctv_feeds', title: 'Live Tactical Video Feeds', description: 'High-throughput optical surveillance feeds with live YOLO bounding box AI overlays.', category: 'live_monitoring', defaultW: 16, defaultH: 13, icon: Video },
-  { type: 'drone_feeds', title: 'UAV / Drone Recon Stream', description: 'Simulated VisDrone aerial telemetry and perimeter scan feed.', category: 'live_monitoring', defaultW: 14, defaultH: 11, icon: Eye },
-  { type: 'radar_summary', title: 'Ground Radar Sweep', description: 'Simulated Doppler radar observation stream with velocity vectors.', category: 'live_monitoring', defaultW: 12, defaultH: 10, icon: Radio },
+  { type: 'cctv_feeds', title: 'Live Tactical Optical Feed', description: 'Optical surveillance feed with live YOLO bounding box overlays.', category: 'live_monitoring', defaultW: 18, defaultH: 14, icon: Video },
+  { type: 'drone_feeds', title: 'UAV / Recon Stream', description: 'VisDrone aerial telemetry and perimeter scan feed.', category: 'live_monitoring', defaultW: 16, defaultH: 12, icon: Eye },
+  { type: 'radar_summary', title: 'Ground Radar Sweep', description: 'Doppler radar observation stream with velocity vectors.', category: 'live_monitoring', defaultW: 14, defaultH: 10, icon: Radio },
 
   // Data Fusion
-  { type: 'fused_summary', title: 'Multi-Sensor Fusion Summary', description: 'Correlated event records combining CCTV, Radar, Thermal, and Acoustic sensor evidence.', category: 'data_fusion', defaultW: 16, defaultH: 11, icon: GitMerge },
-  { type: 'sensor_disagreement', title: 'Sensor Discrepancy & Conflict', description: 'Flags contradictory sensor observations and triggers automated review workflows.', category: 'data_fusion', defaultW: 13, defaultH: 9, icon: AlertTriangle },
+  { type: 'fused_summary', title: '5-Level Policy Distribution', description: 'Policy handling distribution and multi-sensor fusion summary.', category: 'data_fusion', defaultW: 18, defaultH: 12, icon: GitMerge },
+  { type: 'sensor_disagreement', title: 'Sensor Discrepancy Matrix', description: 'Flags contradictory sensor observations across feeds.', category: 'data_fusion', defaultW: 15, defaultH: 10, icon: AlertTriangle },
 
   // Analysis
-  { type: 'analytics_card', title: 'Threat Distribution & Metrics', description: 'Five-level L1-L5 distribution, false-alarm rates, and response latency charts.', category: 'analysis', defaultW: 14, defaultH: 10, icon: BarChart3 },
+  { type: 'analytics_card', title: 'Response Metrics', description: 'Five-level L1-L5 distribution, false-alarm rates, and latency.', category: 'analysis', defaultW: 15, defaultH: 11, icon: BarChart3 },
 
   // Operations
-  { type: 'system_health_card', title: 'Subsystem Health & Telemetry', description: 'Real-time heartbeat of AI inference engine, database latency, and sensor connectors.', category: 'operations', defaultW: 12, defaultH: 8, icon: Activity },
-  { type: 'shift_handoff_card', title: 'Shift Transfer Summary', description: 'Outstanding items, unassigned alerts, and outgoing watch officer debrief log.', category: 'operations', defaultW: 13, defaultH: 9, icon: Repeat }
+  { type: 'system_health_card', title: 'Subsystem Telemetry', description: 'Heartbeat of AI inference engine, database latency, and sensors.', category: 'operations', defaultW: 14, defaultH: 9, icon: Activity },
+  { type: 'shift_handoff_card', title: 'Shift Transfer Summary', description: 'Outstanding items, unassigned alerts, and watch officer log.', category: 'operations', defaultW: 14, defaultH: 10, icon: Repeat }
 ];
 
 export const WidgetLibrary: React.FC<WidgetLibraryProps> = ({
   isOpen,
-  onClose,
-  onAddWidget
+  onClose
 }) => {
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -80,15 +78,27 @@ export const WidgetLibrary: React.FC<WidgetLibraryProps> = ({
     return matchesSearch && matchesCategory;
   });
 
+  const handleDragStart = (e: React.DragEvent, widget: AvailableWidgetDef) => {
+    const payload = {
+      type: widget.type,
+      title: widget.title,
+      category: widget.category,
+      w: widget.defaultW,
+      h: widget.defaultH
+    };
+    e.dataTransfer.setData('application/json', JSON.stringify(payload));
+    e.dataTransfer.effectAllowed = 'copy';
+  };
+
   return (
     <div 
       style={{
         position: 'absolute',
         top: 0,
         right: 0,
-        width: '380px',
+        width: '320px',
         height: '100%',
-        background: 'var(--bg-surface-elevated)',
+        background: 'var(--bg-surface)',
         borderLeft: '1px solid var(--border-focus)',
         boxShadow: 'var(--shadow-panel)',
         display: 'flex',
@@ -98,15 +108,16 @@ export const WidgetLibrary: React.FC<WidgetLibraryProps> = ({
     >
       {/* Header */}
       <div style={{
-        height: '42px',
-        padding: '0 12px',
+        height: '38px',
+        padding: '0 10px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        borderBottom: '1px solid var(--border-subtle)'
+        borderBottom: '1px solid var(--border-subtle)',
+        background: 'var(--bg-surface-elevated)'
       }}>
-        <span style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '0.5px', color: 'var(--text-primary)' }}>
-          WIDGET REPOSITORY
+        <span style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.4px', color: 'var(--text-primary)' }}>
+          WIDGET LIBRARY
         </span>
         <button 
           onClick={onClose}
@@ -115,30 +126,45 @@ export const WidgetLibrary: React.FC<WidgetLibraryProps> = ({
             border: 'none',
             color: 'var(--text-secondary)',
             cursor: 'pointer',
-            padding: '4px'
+            padding: '3px'
           }}
         >
-          <X size={16} />
+          <X size={14} />
         </button>
       </div>
 
+      {/* Drag instruction notice */}
+      <div style={{
+        padding: '6px 10px',
+        background: 'rgba(255, 255, 255, 0.02)',
+        borderBottom: '1px solid var(--border-dim)',
+        fontSize: '10px',
+        color: 'var(--text-secondary)',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '6px'
+      }}>
+        <GripVertical size={13} color="var(--text-muted)" />
+        <span>Drag any module onto the screen to position it</span>
+      </div>
+
       {/* Search & Categories */}
-      <div style={{ padding: '10px 12px', borderBottom: '1px solid var(--border-subtle)' }}>
+      <div style={{ padding: '8px 10px', borderBottom: '1px solid var(--border-subtle)' }}>
         <div style={{
           display: 'flex',
           alignItems: 'center',
           gap: '6px',
           background: 'var(--bg-canvas)',
           border: '1px solid var(--border-subtle)',
-          borderRadius: '4px',
+          borderRadius: '2px',
           padding: '0 8px',
-          height: '30px',
-          marginBottom: '8px'
+          height: '26px',
+          marginBottom: '6px'
         }}>
-          <Search size={13} color="var(--text-muted)" />
+          <Search size={11} color="var(--text-muted)" />
           <input 
             type="text"
-            placeholder="Search widget catalog..."
+            placeholder="Search modules..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             style={{
@@ -146,31 +172,31 @@ export const WidgetLibrary: React.FC<WidgetLibraryProps> = ({
               border: 'none',
               outline: 'none',
               color: 'var(--text-primary)',
-              fontSize: '11px',
+              fontSize: '10px',
               width: '100%'
             }}
           />
         </div>
 
-        <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '3px', flexWrap: 'wrap' }}>
           {[
             { id: 'all', label: 'All' },
             { id: 'situational_awareness', label: 'Surveillance' },
             { id: 'alerts_decisions', label: 'Alerts' },
             { id: 'live_monitoring', label: 'Feeds' },
             { id: 'data_fusion', label: 'Fusion' },
-            { id: 'operations', label: 'Operations' }
+            { id: 'operations', label: 'Ops' }
           ].map(cat => (
             <button
               key={cat.id}
               onClick={() => setSelectedCategory(cat.id)}
               style={{
-                background: selectedCategory === cat.id ? 'var(--accent-cyan-dim)' : 'var(--bg-card)',
-                border: selectedCategory === cat.id ? '1px solid var(--accent-cyan)' : '1px solid var(--border-subtle)',
-                color: selectedCategory === cat.id ? 'var(--accent-cyan)' : 'var(--text-secondary)',
-                fontSize: '10px',
-                padding: '3px 7px',
-                borderRadius: '3px',
+                background: selectedCategory === cat.id ? 'var(--bg-card-hover)' : 'transparent',
+                border: selectedCategory === cat.id ? '1px solid var(--border-focus)' : '1px solid transparent',
+                color: selectedCategory === cat.id ? 'var(--text-primary)' : 'var(--text-secondary)',
+                fontSize: '9px',
+                padding: '2px 5px',
+                borderRadius: '2px',
                 cursor: 'pointer',
                 fontWeight: selectedCategory === cat.id ? 600 : 400
               }}
@@ -181,73 +207,49 @@ export const WidgetLibrary: React.FC<WidgetLibraryProps> = ({
         </div>
       </div>
 
-      {/* List */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '10px 12px' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      {/* Draggable Cards List (No Add button, pure drag-and-drop) */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '8px 10px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
           {filteredWidgets.map((w) => {
             const Icon = w.icon;
             return (
               <div
                 key={w.type}
-                style={{
-                  background: 'var(--bg-card)',
-                  border: '1px solid var(--border-subtle)',
-                  borderRadius: '4px',
-                  padding: '10px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '6px'
-                }}
+                className="draggable-widget-card"
+                draggable={true}
+                onDragStart={(e) => handleDragStart(e, w)}
+                title="Click and drag onto the workspace canvas"
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <div style={{
-                      padding: '5px',
-                      borderRadius: '4px',
-                      background: 'var(--bg-surface)',
-                      color: 'var(--accent-cyan)'
+                      padding: '3px',
+                      borderRadius: '2px',
+                      background: 'var(--bg-surface-elevated)',
+                      color: 'var(--text-secondary)'
                     }}>
-                      <Icon size={14} />
+                      <Icon size={12} />
                     </div>
-                    <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                    <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-primary)' }}>
                       {w.title}
                     </span>
                   </div>
 
-                  <button
-                    onClick={() => onAddWidget({
-                      type: w.type,
-                      title: w.title,
-                      category: w.category,
-                      w: w.defaultW,
-                      h: w.defaultH
-                    })}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      background: 'var(--accent-cyan-dim)',
-                      border: '1px solid rgba(0, 210, 255, 0.4)',
-                      color: 'var(--accent-cyan)',
-                      fontSize: '10px',
-                      fontWeight: 600,
-                      padding: '3px 8px',
-                      borderRadius: '3px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    <Plus size={12} />
-                    <span>ADD</span>
-                  </button>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--text-muted)' }}>
+                    <GripVertical size={13} />
+                  </div>
                 </div>
 
-                <p style={{ fontSize: '11px', color: 'var(--text-secondary)', lineHeight: 1.3 }}>
+                <p style={{ fontSize: '10px', color: 'var(--text-secondary)', lineHeight: 1.3 }}>
                   {w.description}
                 </p>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
-                  <span style={{ fontSize: '9px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-                    Default Size: {w.defaultW}x{w.defaultH} grid
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '2px' }}>
+                  <span style={{ fontSize: '8px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+                    Size: {w.defaultW}x{w.defaultH}
+                  </span>
+                  <span style={{ fontSize: '8px', color: 'var(--text-muted)' }}>
+                    DRAG TO PLACE
                   </span>
                 </div>
               </div>

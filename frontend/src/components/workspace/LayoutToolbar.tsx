@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import { 
-  Plus, 
-  Lock, 
-  Unlock, 
+  FolderOpen, 
   RotateCcw, 
   Save, 
-  FolderOpen, 
-  Grid, 
-  Crosshair
+  Lock, 
+  Unlock, 
+  Crosshair, 
+  Layers
 } from 'lucide-react';
 
 interface LayoutToolbarProps {
@@ -35,41 +34,40 @@ export const LayoutToolbar: React.FC<LayoutToolbarProps> = ({
 
   return (
     <div style={{
-      height: '34px',
+      height: '32px',
       background: 'var(--bg-surface)',
       borderBottom: '1px solid var(--border-subtle)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
-      padding: '0 10px',
+      padding: '0 8px',
       userSelect: 'none',
       zIndex: 60
     }}>
-      {/* Left: Add Widget & Presets */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        {/* Add Widget Button */}
+      {/* Left: Module Library Drawer & Presets */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
         <button
           onClick={onOpenWidgetLibrary}
           style={{
             display: 'flex',
             alignItems: 'center',
             gap: '5px',
-            background: 'var(--accent-cyan-dim)',
-            border: '1px solid rgba(0, 210, 255, 0.4)',
-            color: 'var(--accent-cyan)',
-            padding: '3px 8px',
-            borderRadius: '3px',
-            fontSize: '11px',
+            background: 'var(--bg-card)',
+            border: '1px solid var(--border-focus)',
+            color: 'var(--text-primary)',
+            padding: '3px 7px',
+            borderRadius: '2px',
+            fontSize: '10px',
             fontWeight: 600,
             cursor: 'pointer'
           }}
-          title="Open Widget Repository to add cards"
+          title="Open Library to drag modules onto the workspace"
         >
-          <Plus size={13} />
-          <span>ADD WIDGET</span>
+          <Layers size={11} />
+          <span>MODULES</span>
         </button>
 
-        <div style={{ height: '14px', width: '1px', background: 'var(--border-subtle)' }} />
+        <div style={{ height: '12px', width: '1px', background: 'var(--border-subtle)' }} />
 
         {/* Load Preset Menu */}
         <div style={{ position: 'relative' }}>
@@ -82,13 +80,13 @@ export const LayoutToolbar: React.FC<LayoutToolbarProps> = ({
               background: 'var(--bg-card)',
               border: '1px solid var(--border-subtle)',
               color: 'var(--text-secondary)',
-              padding: '3px 8px',
-              borderRadius: '3px',
-              fontSize: '11px',
+              padding: '3px 7px',
+              borderRadius: '2px',
+              fontSize: '10px',
               cursor: 'pointer'
             }}
           >
-            <FolderOpen size={12} />
+            <FolderOpen size={11} />
             <span>Presets</span>
           </button>
 
@@ -96,14 +94,14 @@ export const LayoutToolbar: React.FC<LayoutToolbarProps> = ({
             <div 
               style={{
                 position: 'absolute',
-                top: '28px',
+                top: '26px',
                 left: 0,
-                width: '180px',
+                width: '170px',
                 background: 'var(--bg-surface-elevated)',
                 border: '1px solid var(--border-focus)',
-                borderRadius: '4px',
+                borderRadius: '2px',
                 boxShadow: 'var(--shadow-panel)',
-                padding: '4px',
+                padding: '3px',
                 zIndex: 1000
               }}
               onMouseLeave={() => setShowPresetsMenu(false)}
@@ -115,7 +113,7 @@ export const LayoutToolbar: React.FC<LayoutToolbarProps> = ({
                   setShowPresetsMenu(false);
                 }}
               >
-                Commander C2 Overview
+                Commander Overview
               </div>
               <div 
                 className="context-item"
@@ -124,7 +122,7 @@ export const LayoutToolbar: React.FC<LayoutToolbarProps> = ({
                   setShowPresetsMenu(false);
                 }}
               >
-                Operator Tactical Feeds
+                Operator Feeds
               </div>
               <div 
                 className="context-item"
@@ -133,7 +131,7 @@ export const LayoutToolbar: React.FC<LayoutToolbarProps> = ({
                   setShowPresetsMenu(false);
                 }}
               >
-                Analyst Fusion & Trends
+                Analyst Fusion
               </div>
             </div>
           )}
@@ -149,77 +147,65 @@ export const LayoutToolbar: React.FC<LayoutToolbarProps> = ({
             background: 'var(--bg-card)',
             border: '1px solid var(--border-subtle)',
             color: 'var(--text-secondary)',
-            padding: '3px 8px',
-            borderRadius: '3px',
-            fontSize: '11px',
+            padding: '3px 7px',
+            borderRadius: '2px',
+            fontSize: '10px',
             cursor: 'pointer'
           }}
-          title="Save current panel positions to persistent storage"
+          title="Save current layout"
         >
-          <Save size={12} />
-          <span>Save Layout</span>
+          <Save size={11} />
+          <span>Save</span>
         </button>
 
         {/* Reset Layout */}
         <button
           onClick={() => {
-            if (window.confirm('Reset workspace to default multi-sensor configuration?')) {
+            if (window.confirm('Reset workspace to default layout?')) {
               onResetLayout();
             }
           }}
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '4px',
+            gap: '3px',
             background: 'none',
             border: 'none',
             color: 'var(--text-muted)',
-            padding: '3px 6px',
-            fontSize: '11px',
+            padding: '3px 5px',
+            fontSize: '10px',
             cursor: 'pointer'
           }}
-          title="Restore factory default layout"
+          title="Restore default layout"
         >
-          <RotateCcw size={12} />
-          <span>Reset Default</span>
+          <RotateCcw size={11} />
+          <span>Reset</span>
         </button>
       </div>
 
-      {/* Right: Snap-to-Grid, Lock & Incident Mode */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      {/* Right: Lock & Incident Mode */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
         {/* Incident Mode Action */}
         <button
           onClick={onToggleIncidentMode}
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '5px',
-            background: isIncidentMode ? 'rgba(239, 68, 68, 0.2)' : 'var(--bg-card)',
+            gap: '4px',
+            background: isIncidentMode ? 'rgba(220, 38, 38, 0.12)' : 'var(--bg-card)',
             border: isIncidentMode ? '1px solid var(--threat-l5)' : '1px solid var(--border-subtle)',
             color: isIncidentMode ? 'var(--threat-l5)' : 'var(--text-secondary)',
-            padding: '3px 8px',
-            borderRadius: '3px',
-            fontSize: '11px',
+            padding: '3px 7px',
+            borderRadius: '2px',
+            fontSize: '10px',
             fontWeight: isIncidentMode ? 700 : 500,
             cursor: 'pointer'
           }}
-          title="Focus workspace on active critical alert, map, and supporting CCTV feeds"
+          title="Focus workspace on active incident"
         >
-          <Crosshair size={13} />
-          <span>{isIncidentMode ? 'EXIT INCIDENT FOCUS' : 'INCIDENT MODE'}</span>
+          <Crosshair size={11} />
+          <span>{isIncidentMode ? 'EXIT INCIDENT FOCUS' : 'INCIDENT FOCUS'}</span>
         </button>
-
-        {/* CAD Grid Indicator */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '4px',
-          color: 'var(--text-muted)',
-          fontSize: '11px'
-        }}>
-          <Grid size={12} />
-          <span>Snap 24px</span>
-        </div>
 
         {/* Lock Layout */}
         <button
@@ -228,17 +214,17 @@ export const LayoutToolbar: React.FC<LayoutToolbarProps> = ({
             display: 'flex',
             alignItems: 'center',
             gap: '4px',
-            background: isLocked ? 'rgba(245, 158, 11, 0.15)' : 'var(--bg-card)',
-            border: isLocked ? '1px solid rgba(245, 158, 11, 0.4)' : '1px solid var(--border-subtle)',
+            background: isLocked ? 'rgba(245, 158, 11, 0.08)' : 'var(--bg-card)',
+            border: isLocked ? '1px solid rgba(245, 158, 11, 0.3)' : '1px solid var(--border-subtle)',
             color: isLocked ? 'var(--threat-l3)' : 'var(--text-secondary)',
-            padding: '3px 8px',
-            borderRadius: '3px',
-            fontSize: '11px',
+            padding: '3px 7px',
+            borderRadius: '2px',
+            fontSize: '10px',
             cursor: 'pointer'
           }}
-          title={isLocked ? 'Unlock layout to reposition or resize panels' : 'Lock layout to prevent accidental moving or resizing'}
+          title={isLocked ? 'Unlock layout' : 'Lock layout'}
         >
-          {isLocked ? <Lock size={12} /> : <Unlock size={12} />}
+          {isLocked ? <Lock size={11} /> : <Unlock size={11} />}
           <span>{isLocked ? 'Locked' : 'Unlocked'}</span>
         </button>
       </div>

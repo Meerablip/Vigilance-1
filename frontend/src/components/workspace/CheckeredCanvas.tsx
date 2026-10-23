@@ -14,7 +14,7 @@ const DEFAULT_COMMANDER_LAYOUT: WidgetConfig[] = [
   {
     id: 'widget-map-1',
     type: 'regional_map',
-    title: 'Regional Threat Map (India GIS Grid)',
+    title: 'Regional Sector Map',
     category: 'situational_awareness',
     x: 0,
     y: 0,
@@ -26,7 +26,7 @@ const DEFAULT_COMMANDER_LAYOUT: WidgetConfig[] = [
   {
     id: 'widget-cctv-1',
     type: 'cctv_feeds',
-    title: 'Live Optical Feed #04 (YOLO AI Overlay)',
+    title: 'Optical Feed CAM-04 (YOLO Stream)',
     category: 'live_monitoring',
     x: 22,
     y: 0,
@@ -38,7 +38,7 @@ const DEFAULT_COMMANDER_LAYOUT: WidgetConfig[] = [
   {
     id: 'widget-alerts-1',
     type: 'alert_queue',
-    title: 'Active Alert Queue (5-Level Prioritized)',
+    title: 'Alert Triage Queue',
     category: 'alerts_decisions',
     x: 0,
     y: 17,
@@ -50,7 +50,7 @@ const DEFAULT_COMMANDER_LAYOUT: WidgetConfig[] = [
   {
     id: 'widget-fused-1',
     type: 'fused_summary',
-    title: '5-Level Policy Distribution & Handling',
+    title: '5-Level Policy Distribution',
     category: 'data_fusion',
     x: 22,
     y: 17,
@@ -65,7 +65,7 @@ const OPERATOR_TACTICAL_LAYOUT: WidgetConfig[] = [
   {
     id: 'widget-cctv-op',
     type: 'cctv_feeds',
-    title: 'Perimeter Live Optical Feed #04',
+    title: 'Perimeter Optical Feed #04',
     category: 'live_monitoring',
     x: 0,
     y: 0,
@@ -77,7 +77,7 @@ const OPERATOR_TACTICAL_LAYOUT: WidgetConfig[] = [
   {
     id: 'widget-map-op',
     type: 'regional_map',
-    title: 'Regional India Map',
+    title: 'Sector Map',
     category: 'situational_awareness',
     x: 21,
     y: 0,
@@ -118,10 +118,10 @@ export const CheckeredCanvas: React.FC<CheckeredCanvasProps> = ({
   const [isIncidentMode, setIsIncidentMode] = useState(false);
   const [focusedWidgetId, setFocusedWidgetId] = useState<string | null>(null);
   const [canvasDimensions, setCanvasDimensions] = useState({ width: 1400, height: 800 });
+  const [isDragOver, setIsDragOver] = useState(false);
 
   const GRID_SIZE = 24;
 
-  // Track canvas size
   useEffect(() => {
     const updateDimensions = () => {
       if (containerRef.current) {
@@ -136,17 +136,14 @@ export const CheckeredCanvas: React.FC<CheckeredCanvasProps> = ({
     return () => window.removeEventListener('resize', updateDimensions);
   }, []);
 
-  // Update a widget
   const handleUpdateWidget = (id: string, updatedProps: Partial<WidgetConfig>) => {
     setWidgets(prev => prev.map(w => w.id === id ? { ...w, ...updatedProps } : w));
   };
 
-  // Remove widget
   const handleRemoveWidget = (id: string) => {
     setWidgets(prev => prev.filter(w => w.id !== id));
   };
 
-  // Duplicate widget
   const handleDuplicateWidget = (widget: WidgetConfig) => {
     const newWidget: WidgetConfig = {
       ...widget,
@@ -158,39 +155,69 @@ export const CheckeredCanvas: React.FC<CheckeredCanvasProps> = ({
     setWidgets(prev => [...prev, newWidget]);
   };
 
-  // Add new widget from library
-  const handleAddFromLibrary = (def: Omit<WidgetConfig, 'id' | 'x' | 'y'>) => {
-    // Find free spot
-    const newWidget: WidgetConfig = {
-      ...def,
-      id: `widget-${Date.now()}`,
-      x: 2,
-      y: 2,
-      minW: 10,
-      minH: 8
-    };
-    setWidgets(prev => [...prev, newWidget]);
-    setIsLibraryOpen(false);
+  // Drag and Drop from Widget Library onto Canvas
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+    if (!isDragOver) setIsDragOver(true);
   };
 
-  // Save layout
+  const handleDragLeave = (e: React.DragEvent) => {
+    // Only unset if leaving canvas
+    if (e.currentTarget === e.target) {
+      setIsDragOver(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+
+    try {
+      const dataStr = e.dataTransfer.getData('application/json');
+      if (!dataStr) return;
+      const def = JSON.parse(dataStr);
+
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        const dropX = e.clientX - rect.left;
+        const dropY = e.clientY - rect.top;
+
+        // Snap to grid
+        const gridX = Math.max(0, Math.floor(dropX / GRID_SIZE));
+        const gridY = Math.max(0, Math.floor(dropY / GRID_SIZE));
+
+        const newWidget: WidgetConfig = {
+          ...def,
+          id: `widget-${Date.now()}`,
+          x: gridX,
+          y: gridY,
+          minW: 10,
+          minH: 8
+        };
+
+        setWidgets(prev => [...prev, newWidget]);
+        setFocusedWidgetId(newWidget.id);
+      }
+    } catch (err) {
+      console.error('Failed to parse dropped widget', err);
+    }
+  };
+
   const handleSaveLayout = () => {
     localStorage.setItem('vigilance_workspace_layout', JSON.stringify(widgets));
-    alert('Workspace layout configuration saved to local storage.');
+    alert('Workspace layout configuration saved.');
   };
 
-  // Reset to default
   const handleResetLayout = () => {
     setWidgets(DEFAULT_COMMANDER_LAYOUT);
     localStorage.removeItem('vigilance_workspace_layout');
   };
 
-  // Presets
   const handleLoadPreset = (preset: 'operator' | 'commander' | 'analyst') => {
     if (preset === 'operator') setWidgets(OPERATOR_TACTICAL_LAYOUT);
     else if (preset === 'commander') setWidgets(DEFAULT_COMMANDER_LAYOUT);
     else {
-      // Analyst preset
       setWidgets([
         { id: 'w-fused', type: 'fused_summary', title: 'Fusion Summary', category: 'data_fusion', x: 0, y: 0, w: 20, h: 16 },
         { id: 'w-health', type: 'system_health_card', title: 'System Health', category: 'operations', x: 20, y: 0, w: 21, h: 16 },
@@ -199,15 +226,13 @@ export const CheckeredCanvas: React.FC<CheckeredCanvasProps> = ({
     }
   };
 
-  // Toggle incident focus mode
   const handleToggleIncidentMode = () => {
     if (!isIncidentMode) {
-      // Switch to incident focus
       setIsIncidentMode(true);
       setWidgets([
-        { id: 'w-inc-map', type: 'regional_map', title: 'INCIDENT GIS FOCUS • NORTH SECTOR 4', category: 'situational_awareness', x: 0, y: 0, w: 20, h: 28 },
+        { id: 'w-inc-map', type: 'regional_map', title: 'INCIDENT FOCUS • NORTH SECTOR', category: 'situational_awareness', x: 0, y: 0, w: 20, h: 28 },
         { id: 'w-inc-cctv', type: 'cctv_feeds', title: 'PRIMARY SENSOR CAM-NORTH-04', category: 'live_monitoring', x: 20, y: 0, w: 21, h: 16 },
-        { id: 'w-inc-alerts', type: 'alert_queue', title: 'RELATED EVIDENCE & SENSOR SPIKES', category: 'alerts_decisions', x: 20, y: 16, w: 21, h: 12 }
+        { id: 'w-inc-alerts', type: 'alert_queue', title: 'CORRELATED EVIDENCE', category: 'alerts_decisions', x: 20, y: 16, w: 21, h: 12 }
       ]);
     } else {
       setIsIncidentMode(false);
@@ -217,7 +242,6 @@ export const CheckeredCanvas: React.FC<CheckeredCanvasProps> = ({
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', position: 'relative', overflow: 'hidden' }}>
-      {/* Layout Toolbar */}
       <LayoutToolbar
         isLocked={isLocked}
         onToggleLock={() => setIsLocked(!isLocked)}
@@ -229,11 +253,18 @@ export const CheckeredCanvas: React.FC<CheckeredCanvasProps> = ({
         isIncidentMode={isIncidentMode}
       />
 
-      {/* Main Checkered Canvas Area */}
       <div 
         ref={containerRef}
         className="checkered-canvas"
-        style={{ flex: 1, height: '100%', position: 'relative' }}
+        style={{
+          flex: 1,
+          height: '100%',
+          position: 'relative',
+          outline: isDragOver ? '2px dashed var(--border-active)' : 'none'
+        }}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
       >
         {widgets.map((widget) => (
           <ModularWidget
@@ -256,11 +287,9 @@ export const CheckeredCanvas: React.FC<CheckeredCanvasProps> = ({
           </ModularWidget>
         ))}
 
-        {/* Slide-out Widget Library Drawer */}
         <WidgetLibrary
           isOpen={isLibraryOpen}
           onClose={() => setIsLibraryOpen(false)}
-          onAddWidget={handleAddFromLibrary}
         />
       </div>
     </div>

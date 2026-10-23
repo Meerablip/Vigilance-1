@@ -29,7 +29,7 @@ export const Footer: React.FC<FooterProps> = ({
       {/* Left: Role & Shift */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-          <ShieldCheck size={12} color="var(--accent-cyan)" />
+          <ShieldCheck size={12} color="var(--text-muted)" />
           <span>Active Role: <strong style={{ color: 'var(--text-secondary)' }}>{userRole}</strong></span>
         </div>
         <span>•</span>
@@ -43,12 +43,12 @@ export const Footer: React.FC<FooterProps> = ({
 
       {/* Center: Strict Prototype Disclaimer */}
       <div style={{ 
-        color: '#ffb300', 
+        color: 'var(--text-muted)', 
         fontSize: '10px', 
-        letterSpacing: '0.5px',
-        fontWeight: 600
+        letterSpacing: '0.4px',
+        fontWeight: 500
       }}>
-        VIGILANCE PROTOTYPE · SIMULATION POLICY V1.0 · NOT FOR OPERATIONAL TACTICAL DEPLOYMENT
+        VIGILANCE PROTOTYPE · FOR INTERNAL EVALUATION ONLY
       </div>
 
       {/* Right: State & Hotkeys */}

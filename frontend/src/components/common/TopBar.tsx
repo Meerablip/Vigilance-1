@@ -12,8 +12,7 @@ import {
   ChevronDown,
   UserPlus,
   LogOut,
-  Sliders,
-  Shield
+  Sliders
 } from 'lucide-react';
 import type { ThreatLevel, PageId } from '../../types';
 
@@ -40,7 +39,7 @@ export const TopBar: React.FC<TopBarProps> = ({
 }) => {
   const [currentTime, setCurrentTime] = useState<string>('');
   const [showUserMenu, setShowUserMenu] = useState<boolean>(false);
-  const [selectedSector, setSelectedSector] = useState<string>('All Sectors (National)');
+  const [selectedSector, setSelectedSector] = useState<string>('All Sectors');
   const [selectedTimeRange, setSelectedTimeRange] = useState<string>('Last 24 Hours');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
@@ -57,7 +56,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   return (
     <header style={{
       height: 'var(--topbar-height)',
-      background: 'var(--bg-surface-elevated)',
+      background: 'var(--bg-surface)',
       borderBottom: '1px solid var(--border-subtle)',
       display: 'flex',
       alignItems: 'center',
@@ -67,8 +66,8 @@ export const TopBar: React.FC<TopBarProps> = ({
       userSelect: 'none',
       zIndex: 100
     }}>
-      {/* Left: Brand & Return to Workspace */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+      {/* Left: Bold Huge V Logo (No text as requested) */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
         <button 
           onClick={() => onNavigate('workspace')}
           style={{
@@ -76,66 +75,61 @@ export const TopBar: React.FC<TopBarProps> = ({
             border: 'none',
             display: 'flex',
             alignItems: 'center',
-            gap: '8px',
+            justifyContent: 'center',
             cursor: 'pointer',
-            padding: '4px 6px',
-            borderRadius: '4px'
+            padding: '2px 4px',
+            borderRadius: '2px'
           }}
-          title="Return to Main Workspace"
+          title="Return to Workspace"
         >
+          {/* Bold Huge V Logo */}
           <div style={{
-            width: '26px',
-            height: '26px',
-            borderRadius: '4px',
-            background: 'linear-gradient(135deg, #00d2ff 0%, #0055ff 100%)',
+            width: '32px',
+            height: '32px',
+            background: '#1a1f29',
+            border: '1px solid #323a49',
+            borderRadius: '3px',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
-            color: '#000',
-            fontWeight: 900
+            justifyContent: 'center'
           }}>
-            <Shield size={16} strokeWidth={2.5} color="#05070a" />
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-            <span style={{ 
-              fontWeight: 800, 
-              fontSize: '13px', 
-              letterSpacing: '1px', 
-              color: 'var(--text-primary)',
-              lineHeight: 1.1
+            <span style={{
+              fontFamily: "'Impact', 'Arial Black', -apple-system, sans-serif",
+              fontSize: '22px',
+              fontWeight: 900,
+              color: '#e2e8f0',
+              lineHeight: 1,
+              letterSpacing: '-1px'
             }}>
-              VIGILANCE
-            </span>
-            <span style={{ fontSize: '9px', color: 'var(--accent-cyan)', letterSpacing: '0.8px', fontWeight: 600 }}>
-              C2 DEFENSE FUSION
+              V
             </span>
           </div>
         </button>
 
-        {/* Active Highest Threat Indicator */}
+        {/* Active Highest Threat Indicator (Minimalist & Subdued) */}
         <div 
           onClick={() => onNavigate('alerts')}
           style={{
             display: 'flex',
             alignItems: 'center',
             gap: '6px',
-            padding: '3px 8px',
-            borderRadius: '3px',
+            padding: '3px 7px',
+            borderRadius: '2px',
             background: 'var(--threat-l4-bg)',
-            border: '1px solid rgba(249, 115, 22, 0.4)',
+            border: '1px solid rgba(234, 88, 12, 0.3)',
             cursor: 'pointer'
           }}
           title="Highest active threat level across monitored sectors"
         >
-          <ShieldAlert size={14} color="var(--threat-l4)" />
-          <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--threat-l4)', letterSpacing: '0.5px' }}>
+          <ShieldAlert size={13} color="var(--threat-l4)" />
+          <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--threat-l4)', letterSpacing: '0.4px' }}>
             {highestThreatLevel} HIGH ({activeThreatCount})
           </span>
         </div>
       </div>
 
       {/* Center: Global Search & Quick Scope Filters */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, maxWidth: '640px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, maxWidth: '600px' }}>
         {/* Search */}
         <div style={{
           display: 'flex',
@@ -143,12 +137,12 @@ export const TopBar: React.FC<TopBarProps> = ({
           gap: '6px',
           background: 'var(--bg-canvas)',
           border: '1px solid var(--border-subtle)',
-          borderRadius: '4px',
+          borderRadius: '2px',
           padding: '0 8px',
-          height: '30px',
+          height: '28px',
           flex: 1
         }}>
-          <Search size={13} color="var(--text-muted)" />
+          <Search size={12} color="var(--text-muted)" />
           <input 
             type="text"
             placeholder="Search incident ID, sector, sensor or officer..."
@@ -159,7 +153,7 @@ export const TopBar: React.FC<TopBarProps> = ({
               border: 'none',
               outline: 'none',
               color: 'var(--text-primary)',
-              fontSize: '12px',
+              fontSize: '11px',
               width: '100%'
             }}
           />
@@ -172,13 +166,13 @@ export const TopBar: React.FC<TopBarProps> = ({
           gap: '4px',
           background: 'var(--bg-card)',
           border: '1px solid var(--border-subtle)',
-          borderRadius: '4px',
-          padding: '0 8px',
-          height: '30px',
+          borderRadius: '2px',
+          padding: '0 6px',
+          height: '28px',
           fontSize: '11px',
           color: 'var(--text-secondary)'
         }}>
-          <MapPin size={12} color="var(--accent-cyan)" />
+          <MapPin size={11} color="var(--text-muted)" />
           <select 
             value={selectedSector}
             onChange={(e) => setSelectedSector(e.target.value)}
@@ -191,10 +185,10 @@ export const TopBar: React.FC<TopBarProps> = ({
               cursor: 'pointer'
             }}
           >
-            <option value="All Sectors (National)">All Sectors (National)</option>
-            <option value="Northern Frontier Command">Northern Frontier Command</option>
-            <option value="Western Maritime Corridor">Western Maritime Corridor</option>
-            <option value="Eastern Line Perimeter">Eastern Line Perimeter</option>
+            <option value="All Sectors">All Sectors</option>
+            <option value="Northern Frontier">Northern Frontier</option>
+            <option value="Western Maritime">Western Maritime</option>
+            <option value="Eastern Perimeter">Eastern Perimeter</option>
           </select>
         </div>
 
@@ -205,13 +199,13 @@ export const TopBar: React.FC<TopBarProps> = ({
           gap: '4px',
           background: 'var(--bg-card)',
           border: '1px solid var(--border-subtle)',
-          borderRadius: '4px',
-          padding: '0 8px',
-          height: '30px',
+          borderRadius: '2px',
+          padding: '0 6px',
+          height: '28px',
           fontSize: '11px',
           color: 'var(--text-secondary)'
         }}>
-          <Clock size={12} color="var(--text-muted)" />
+          <Clock size={11} color="var(--text-muted)" />
           <select 
             value={selectedTimeRange}
             onChange={(e) => setSelectedTimeRange(e.target.value)}
@@ -224,44 +218,44 @@ export const TopBar: React.FC<TopBarProps> = ({
               cursor: 'pointer'
             }}
           >
-            <option value="Live Stream">Live Stream</option>
-            <option value="Last 1 Hour">Last 1 Hour</option>
-            <option value="Last 24 Hours">Last 24 Hours</option>
-            <option value="Last 7 Days">Last 7 Days</option>
+            <option value="Live">Live</option>
+            <option value="Last 1 Hour">Last 1h</option>
+            <option value="Last 24 Hours">Last 24h</option>
+            <option value="Last 7 Days">Last 7d</option>
           </select>
         </div>
       </div>
 
       {/* Right: Authorization Queue, Telemetry, Clock & User Profile */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-        {/* Authorization Queue quick button */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        {/* Authorization Queue */}
         <button
           onClick={() => onNavigate('authorization_queue')}
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '6px',
-            background: pendingAuthCount > 0 ? 'rgba(245, 158, 11, 0.15)' : 'var(--bg-card)',
-            border: pendingAuthCount > 0 ? '1px solid rgba(245, 158, 11, 0.4)' : '1px solid var(--border-subtle)',
+            gap: '5px',
+            background: pendingAuthCount > 0 ? 'rgba(245, 158, 11, 0.08)' : 'var(--bg-card)',
+            border: pendingAuthCount > 0 ? '1px solid rgba(245, 158, 11, 0.3)' : '1px solid var(--border-subtle)',
             color: pendingAuthCount > 0 ? 'var(--threat-l3)' : 'var(--text-secondary)',
-            borderRadius: '4px',
-            padding: '4px 8px',
-            height: '30px',
-            fontSize: '11px',
+            borderRadius: '2px',
+            padding: '3px 7px',
+            height: '28px',
+            fontSize: '10px',
             fontWeight: 600,
             cursor: 'pointer'
           }}
           title="Decisions awaiting human commander authorization"
         >
-          <ClipboardCheck size={14} />
+          <ClipboardCheck size={12} />
           <span>AUTHORIZATION</span>
           {pendingAuthCount > 0 && (
             <span style={{
               background: 'var(--threat-l3)',
               color: '#000',
-              borderRadius: '9px',
-              padding: '1px 5px',
-              fontSize: '10px',
+              borderRadius: '2px',
+              padding: '0 4px',
+              fontSize: '9px',
               fontWeight: 800
             }}>
               {pendingAuthCount}
@@ -275,17 +269,17 @@ export const TopBar: React.FC<TopBarProps> = ({
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '5px',
-            padding: '0 6px',
-            height: '30px',
+            gap: '4px',
+            padding: '0 5px',
+            height: '28px',
             cursor: 'pointer',
-            fontSize: '11px',
+            fontSize: '10px',
             color: 'var(--status-healthy)'
           }}
-          title="All 7 core services operational. GPU inference: 18ms latency."
+          title="All core services operational"
         >
-          <Activity size={13} color="var(--status-healthy)" />
-          <span style={{ fontWeight: 600 }}>SYSTEM 100%</span>
+          <Activity size={12} color="var(--status-healthy)" />
+          <span style={{ fontWeight: 600 }}>100%</span>
         </div>
 
         {/* Live Network Sync */}
@@ -293,14 +287,14 @@ export const TopBar: React.FC<TopBarProps> = ({
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '4px',
-            fontSize: '11px',
-            color: 'var(--accent-cyan)'
+            gap: '3px',
+            fontSize: '10px',
+            color: 'var(--text-secondary)'
           }}
           title="Synchronized to defense high-bandwidth satellite uplink"
         >
-          <Wifi size={13} />
-          <span style={{ fontWeight: 600 }}>LIVE</span>
+          <Wifi size={11} />
+          <span style={{ fontWeight: 600 }}>SYNC</span>
         </div>
 
         {/* Notifications */}
@@ -312,39 +306,29 @@ export const TopBar: React.FC<TopBarProps> = ({
             color: 'var(--text-secondary)',
             cursor: 'pointer',
             padding: '4px',
-            position: 'relative',
             display: 'flex',
             alignItems: 'center'
           }}
           title="Recent notifications"
         >
-          <Bell size={16} />
-          <span style={{
-            position: 'absolute',
-            top: '2px',
-            right: '2px',
-            width: '6px',
-            height: '6px',
-            borderRadius: '50%',
-            background: 'var(--accent-cyan)'
-          }} />
+          <Bell size={14} />
         </button>
 
         {/* Server Clock */}
         <div style={{
           fontFamily: 'monospace',
-          fontSize: '11px',
+          fontSize: '10px',
           color: 'var(--text-secondary)',
           background: 'var(--bg-canvas)',
-          padding: '4px 7px',
-          borderRadius: '3px',
+          padding: '3px 6px',
+          borderRadius: '2px',
           border: '1px solid var(--border-subtle)',
-          letterSpacing: '0.5px'
+          letterSpacing: '0.4px'
         }}>
           {currentTime || '00:00:00 IST'}
         </div>
 
-        {/* User Profile & Private Invite Generation Trigger */}
+        {/* User Profile */}
         <div style={{ position: 'relative' }}>
           <button 
             onClick={() => setShowUserMenu(!showUserMenu)}
@@ -354,30 +338,30 @@ export const TopBar: React.FC<TopBarProps> = ({
               gap: '6px',
               background: 'var(--bg-card)',
               border: '1px solid var(--border-subtle)',
-              borderRadius: '4px',
-              padding: '4px 8px',
-              height: '30px',
+              borderRadius: '2px',
+              padding: '3px 7px',
+              height: '28px',
               cursor: 'pointer',
               color: 'var(--text-primary)'
             }}
           >
             <div style={{
-              width: '18px',
-              height: '18px',
-              borderRadius: '50%',
-              background: 'var(--accent-blue-dim)',
+              width: '16px',
+              height: '16px',
+              borderRadius: '2px',
+              background: '#242a36',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: 'var(--accent-blue)'
+              color: '#94a3b8'
             }}>
-              <User size={12} />
+              <User size={10} />
             </div>
             <div style={{ textAlign: 'left', lineHeight: 1 }}>
-              <div style={{ fontSize: '11px', fontWeight: 600 }}>{userName}</div>
-              <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>{userRole}</div>
+              <div style={{ fontSize: '10px', fontWeight: 600 }}>{userName}</div>
+              <div style={{ fontSize: '8px', color: 'var(--text-muted)' }}>{userRole}</div>
             </div>
-            <ChevronDown size={12} color="var(--text-muted)" />
+            <ChevronDown size={10} color="var(--text-muted)" />
           </button>
 
           {/* User Dropdown Menu */}
@@ -385,22 +369,22 @@ export const TopBar: React.FC<TopBarProps> = ({
             <div 
               style={{
                 position: 'absolute',
-                top: '36px',
+                top: '32px',
                 right: 0,
-                width: '230px',
+                width: '210px',
                 background: 'var(--bg-surface-elevated)',
                 border: '1px solid var(--border-focus)',
-                borderRadius: '4px',
+                borderRadius: '2px',
                 boxShadow: 'var(--shadow-panel)',
-                padding: '6px',
+                padding: '4px',
                 zIndex: 1000
               }}
               onMouseLeave={() => setShowUserMenu(false)}
             >
-              <div style={{ padding: '6px 8px', borderBottom: '1px solid var(--border-subtle)' }}>
-                <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>{userName}</div>
-                <div style={{ fontSize: '10px', color: 'var(--accent-cyan)' }}>Role: {userRole}</div>
-                <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Shift: Alpha (08:00 - 16:00)</div>
+              <div style={{ padding: '5px 7px', borderBottom: '1px solid var(--border-subtle)' }}>
+                <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-primary)' }}>{userName}</div>
+                <div style={{ fontSize: '9px', color: 'var(--text-secondary)' }}>Role: {userRole}</div>
+                <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Shift: Alpha</div>
               </div>
 
               {/* Private Invite Link Action */}
@@ -413,19 +397,19 @@ export const TopBar: React.FC<TopBarProps> = ({
                   width: '100%',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '8px',
-                  background: 'rgba(0, 210, 255, 0.08)',
-                  border: '1px solid rgba(0, 210, 255, 0.25)',
-                  color: 'var(--accent-cyan)',
-                  padding: '7px 10px',
-                  borderRadius: '3px',
-                  margin: '6px 0',
-                  fontSize: '11px',
+                  gap: '7px',
+                  background: 'rgba(255, 255, 255, 0.04)',
+                  border: '1px solid var(--border-focus)',
+                  color: 'var(--text-primary)',
+                  padding: '6px 8px',
+                  borderRadius: '2px',
+                  margin: '4px 0',
+                  fontSize: '10px',
                   fontWeight: 600,
                   cursor: 'pointer'
                 }}
               >
-                <UserPlus size={13} />
+                <UserPlus size={12} />
                 <span>Generate Private Invite Link</span>
               </button>
 
@@ -434,22 +418,9 @@ export const TopBar: React.FC<TopBarProps> = ({
                   setShowUserMenu(false);
                   onNavigate('users');
                 }}
-                style={{
-                  width: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  background: 'none',
-                  border: 'none',
-                  color: 'var(--text-secondary)',
-                  padding: '6px 8px',
-                  borderRadius: '3px',
-                  fontSize: '11px',
-                  cursor: 'pointer'
-                }}
                 className="context-item"
               >
-                <User size={13} />
+                <User size={12} />
                 <span>Users & Permissions</span>
               </button>
 
@@ -458,26 +429,13 @@ export const TopBar: React.FC<TopBarProps> = ({
                   setShowUserMenu(false);
                   onNavigate('settings');
                 }}
-                style={{
-                  width: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  background: 'none',
-                  border: 'none',
-                  color: 'var(--text-secondary)',
-                  padding: '6px 8px',
-                  borderRadius: '3px',
-                  fontSize: '11px',
-                  cursor: 'pointer'
-                }}
                 className="context-item"
               >
-                <Sliders size={13} />
-                <span>Security & Settings</span>
+                <Sliders size={12} />
+                <span>System Settings</span>
               </button>
 
-              <div style={{ height: '1px', background: 'var(--border-subtle)', margin: '4px 0' }} />
+              <div className="context-divider" />
 
               <button
                 onClick={() => {
@@ -488,18 +446,17 @@ export const TopBar: React.FC<TopBarProps> = ({
                   width: '100%',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '8px',
+                  gap: '7px',
                   background: 'none',
                   border: 'none',
                   color: 'var(--threat-l5)',
-                  padding: '6px 8px',
-                  borderRadius: '3px',
-                  fontSize: '11px',
+                  padding: '5px 8px',
+                  borderRadius: '2px',
+                  fontSize: '10px',
                   cursor: 'pointer'
                 }}
-                className="context-item"
               >
-                <LogOut size={13} />
+                <LogOut size={12} />
                 <span>Secure Sign Out</span>
               </button>
             </div>

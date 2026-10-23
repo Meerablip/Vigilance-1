@@ -17,7 +17,6 @@ export const InviteGeneratorModal: React.FC<InviteGeneratorModalProps> = ({ isOp
   if (!isOpen) return null;
 
   const handleGenerate = () => {
-    // Generate secure simulated token
     const tokenPayload = {
       role: selectedRole,
       region: selectedRegion,
@@ -46,18 +45,17 @@ export const InviteGeneratorModal: React.FC<InviteGeneratorModalProps> = ({ isOp
       left: 0,
       right: 0,
       bottom: 0,
-      background: 'rgba(0, 0, 0, 0.75)',
-      backdropFilter: 'blur(4px)',
+      background: 'rgba(5, 7, 10, 0.85)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       zIndex: 9999
     }}>
       <div style={{
-        width: '500px',
+        width: '460px',
         background: 'var(--bg-surface-elevated)',
         border: '1px solid var(--border-focus)',
-        borderRadius: '6px',
+        borderRadius: '3px',
         boxShadow: 'var(--shadow-panel)',
         display: 'flex',
         flexDirection: 'column',
@@ -65,29 +63,29 @@ export const InviteGeneratorModal: React.FC<InviteGeneratorModalProps> = ({ isOp
       }}>
         {/* Header */}
         <div style={{
-          height: '46px',
+          height: '40px',
           background: 'var(--bg-surface)',
           borderBottom: '1px solid var(--border-subtle)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '0 16px'
+          padding: '0 12px'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <div style={{
-              width: '24px',
-              height: '24px',
-              borderRadius: '4px',
-              background: 'var(--accent-cyan-dim)',
+              width: '20px',
+              height: '20px',
+              borderRadius: '2px',
+              background: '#202530',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: 'var(--accent-cyan)'
+              color: 'var(--text-primary)'
             }}>
-              <UserPlus size={14} />
+              <UserPlus size={12} />
             </div>
-            <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '0.4px' }}>
-              GENERATE PRIVATE ONBOARDING INVITE
+            <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '0.4px', textTransform: 'uppercase' }}>
+              Generate Private Onboarding Token
             </span>
           </div>
 
@@ -98,33 +96,33 @@ export const InviteGeneratorModal: React.FC<InviteGeneratorModalProps> = ({ isOp
               border: 'none',
               color: 'var(--text-muted)',
               cursor: 'pointer',
-              padding: '4px'
+              padding: '3px'
             }}
           >
-            <X size={16} />
+            <X size={14} />
           </button>
         </div>
 
         {/* Body */}
-        <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        <div style={{ padding: '14px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <div style={{
-            background: 'rgba(0, 210, 255, 0.05)',
-            border: '1px solid rgba(0, 210, 255, 0.2)',
-            padding: '10px',
-            borderRadius: '4px',
-            fontSize: '11px',
+            background: 'var(--bg-card)',
+            border: '1px solid var(--border-subtle)',
+            padding: '8px 10px',
+            borderRadius: '2px',
+            fontSize: '10px',
             color: 'var(--text-secondary)',
             lineHeight: 1.4
           }}>
-            <ShieldCheck size={14} color="var(--accent-cyan)" style={{ display: 'inline', marginRight: '6px', verticalAlign: 'text-bottom' }} />
-            Public registration is disabled. You are generating a single-use cryptographically bound onboarding token. The user will be required to configure Multi-Factor Authentication (MFA) upon account creation.
+            <ShieldCheck size={12} color="var(--text-primary)" style={{ display: 'inline', marginRight: '5px', verticalAlign: 'text-bottom' }} />
+            Public sign-up is disabled. Generates a single-use cryptographically bound invite link. The recipient must enroll Multi-Factor Authentication (MFA).
           </div>
 
           {/* Role Selection */}
           <div>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
-              <Key size={12} color="var(--accent-cyan)" />
-              <span>ASSIGNED ROLE & PERMISSION LEVEL</span>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '10px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '5px' }}>
+              <Key size={11} color="var(--text-muted)" />
+              <span>ASSIGNED ROLE & CLEARANCE</span>
             </label>
             <select
               value={selectedRole}
@@ -134,26 +132,26 @@ export const InviteGeneratorModal: React.FC<InviteGeneratorModalProps> = ({ isOp
                 background: 'var(--bg-canvas)',
                 border: '1px solid var(--border-subtle)',
                 color: 'var(--text-primary)',
-                padding: '8px',
-                borderRadius: '4px',
-                fontSize: '12px',
+                padding: '6px 8px',
+                borderRadius: '2px',
+                fontSize: '11px',
                 outline: 'none',
                 cursor: 'pointer'
               }}
             >
-              <option value="operator">Operator (Surveillance, Live Feeds & Triage)</option>
+              <option value="operator">Operator (Surveillance, Feeds & Triage)</option>
               <option value="supervisor">Supervisor / Commander (Full Authorization & Escalation)</option>
-              <option value="analyst">Analyst (Sensor Fusion, Trends & Model Performance)</option>
-              <option value="auditor">Auditor (Tamper-Evident History & Verification Only)</option>
-              <option value="administrator">System Administrator (Full System & Policy Config)</option>
+              <option value="analyst">Analyst (Fusion, Trends & Model Analytics)</option>
+              <option value="auditor">Auditor (Tamper-Evident History Only)</option>
+              <option value="administrator">System Administrator (Full System Configuration)</option>
             </select>
           </div>
 
           {/* Region / Location Scope */}
           <div>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
-              <MapPin size={12} color="var(--accent-cyan)" />
-              <span>PERMITTED OPERATIONAL SECTOR</span>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '10px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '5px' }}>
+              <MapPin size={11} color="var(--text-muted)" />
+              <span>PERMITTED SECTOR SCOPE</span>
             </label>
             <select
               value={selectedRegion}
@@ -163,9 +161,9 @@ export const InviteGeneratorModal: React.FC<InviteGeneratorModalProps> = ({ isOp
                 background: 'var(--bg-canvas)',
                 border: '1px solid var(--border-subtle)',
                 color: 'var(--text-primary)',
-                padding: '8px',
-                borderRadius: '4px',
-                fontSize: '12px',
+                padding: '6px 8px',
+                borderRadius: '2px',
+                fontSize: '11px',
                 outline: 'none',
                 cursor: 'pointer'
               }}
@@ -174,17 +172,17 @@ export const InviteGeneratorModal: React.FC<InviteGeneratorModalProps> = ({ isOp
               <option value="Western Maritime Base">Western Maritime Base</option>
               <option value="Eastern Line Perimeter">Eastern Line Perimeter</option>
               <option value="Central Strategic Depot">Central Strategic Depot</option>
-              <option value="All Monitored Sectors">All Monitored Sectors (National Access)</option>
+              <option value="All Monitored Sectors">All Monitored Sectors (National)</option>
             </select>
           </div>
 
           {/* Expiration Window */}
           <div>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
-              <Clock size={12} color="var(--accent-cyan)" />
-              <span>TOKEN EXPIRATION TIMEFRAME</span>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '10px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '5px' }}>
+              <Clock size={11} color="var(--text-muted)" />
+              <span>EXPIRATION WINDOW</span>
             </label>
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <div style={{ display: 'flex', gap: '6px' }}>
               {[
                 { h: 1, label: '1 Hour' },
                 { h: 24, label: '24 Hours' },
@@ -195,12 +193,12 @@ export const InviteGeneratorModal: React.FC<InviteGeneratorModalProps> = ({ isOp
                   onClick={() => setExpiryHours(opt.h)}
                   style={{
                     flex: 1,
-                    background: expiryHours === opt.h ? 'var(--accent-cyan-dim)' : 'var(--bg-canvas)',
-                    border: expiryHours === opt.h ? '1px solid var(--accent-cyan)' : '1px solid var(--border-subtle)',
-                    color: expiryHours === opt.h ? 'var(--accent-cyan)' : 'var(--text-secondary)',
-                    padding: '6px',
-                    borderRadius: '4px',
-                    fontSize: '11px',
+                    background: expiryHours === opt.h ? 'var(--bg-card-hover)' : 'var(--bg-canvas)',
+                    border: expiryHours === opt.h ? '1px solid var(--border-active)' : '1px solid var(--border-subtle)',
+                    color: expiryHours === opt.h ? '#fff' : 'var(--text-secondary)',
+                    padding: '5px',
+                    borderRadius: '2px',
+                    fontSize: '10px',
                     fontWeight: expiryHours === opt.h ? 600 : 400,
                     cursor: 'pointer'
                   }}
@@ -211,27 +209,27 @@ export const InviteGeneratorModal: React.FC<InviteGeneratorModalProps> = ({ isOp
             </div>
           </div>
 
-          {/* Generate Button */}
+          {/* Generate Button - Muted Matte Charcoal / Steel */}
           <button
             onClick={handleGenerate}
             style={{
-              background: 'linear-gradient(135deg, #00d2ff 0%, #0077ff 100%)',
-              border: 'none',
-              color: '#000',
-              fontWeight: 700,
-              fontSize: '12px',
-              padding: '10px',
-              borderRadius: '4px',
+              background: '#242a36',
+              border: '1px solid #374254',
+              color: '#e2e8f0',
+              fontWeight: 600,
+              fontSize: '11px',
+              padding: '8px',
+              borderRadius: '2px',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: '6px',
-              letterSpacing: '0.4px',
-              marginTop: '4px'
+              letterSpacing: '0.3px',
+              marginTop: '2px'
             }}
           >
-            <Key size={14} />
+            <Key size={12} />
             <span>GENERATE PRIVATE SIGNUP URL</span>
           </button>
 
@@ -240,17 +238,17 @@ export const InviteGeneratorModal: React.FC<InviteGeneratorModalProps> = ({ isOp
             <div style={{
               background: 'var(--bg-canvas)',
               border: '1px solid var(--border-focus)',
-              borderRadius: '4px',
-              padding: '10px',
+              borderRadius: '2px',
+              padding: '8px',
               display: 'flex',
               flexDirection: 'column',
-              gap: '8px'
+              gap: '6px'
             }}>
-              <span style={{ fontSize: '10px', fontWeight: 600, color: 'var(--accent-cyan)', textTransform: 'uppercase' }}>
-                Secure Invite URL Generated (Single-Use Token)
+              <span style={{ fontSize: '9px', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
+                Secure Invite URL Generated (Single-Use)
               </span>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <input
                   type="text"
                   readOnly
@@ -260,9 +258,9 @@ export const InviteGeneratorModal: React.FC<InviteGeneratorModalProps> = ({ isOp
                     background: 'var(--bg-card)',
                     border: '1px solid var(--border-subtle)',
                     color: 'var(--text-primary)',
-                    padding: '6px 8px',
-                    borderRadius: '3px',
-                    fontSize: '11px',
+                    padding: '5px 7px',
+                    borderRadius: '2px',
+                    fontSize: '10px',
                     fontFamily: 'monospace',
                     outline: 'none'
                   }}
@@ -271,25 +269,25 @@ export const InviteGeneratorModal: React.FC<InviteGeneratorModalProps> = ({ isOp
                 <button
                   onClick={handleCopy}
                   style={{
-                    background: copied ? 'var(--status-healthy)' : 'var(--accent-cyan)',
-                    border: 'none',
-                    color: '#000',
-                    fontWeight: 700,
-                    padding: '6px 12px',
-                    borderRadius: '3px',
-                    fontSize: '11px',
+                    background: copied ? 'var(--status-healthy)' : '#2a3240',
+                    border: '1px solid var(--border-focus)',
+                    color: copied ? '#000' : '#e2e8f0',
+                    fontWeight: 600,
+                    padding: '5px 10px',
+                    borderRadius: '2px',
+                    fontSize: '10px',
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '4px'
                   }}
                 >
-                  {copied ? <Check size={12} /> : <Copy size={12} />}
+                  {copied ? <Check size={11} /> : <Copy size={11} />}
                   <span>{copied ? 'COPIED' : 'COPY'}</span>
                 </button>
               </div>
 
-              <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
+              <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>
                 Target role: <strong>{selectedRole.toUpperCase()}</strong> • Scope: <strong>{selectedRegion}</strong> • Token expires in {expiryHours}h.
               </div>
             </div>

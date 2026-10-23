@@ -248,7 +248,7 @@ export const App: React.FC = () => {
                   cursor: 'pointer'
                 }}
               >
-                Return to Modular CAD Workspace
+                Return to Workspace
               </button>
             </div>
           </div>
