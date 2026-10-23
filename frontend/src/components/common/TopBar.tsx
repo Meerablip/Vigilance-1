@@ -25,6 +25,8 @@ interface TopBarProps {
   onOpenInviteModal: () => void;
   userRole?: string;
   userName?: string;
+  onStartSimulation?: () => void;
+  isSimulating?: boolean;
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
@@ -35,7 +37,9 @@ export const TopBar: React.FC<TopBarProps> = ({
   pendingAuthCount = 3,
   onOpenInviteModal,
   userRole = 'Chief Commander',
-  userName = 'Cmdr. R. Sharma'
+  userName = 'Cmdr. R. Sharma',
+  onStartSimulation,
+  isSimulating = false
 }) => {
   const [currentTime, setCurrentTime] = useState<string>('');
   const [showUserMenu, setShowUserMenu] = useState<boolean>(false);
@@ -228,6 +232,33 @@ export const TopBar: React.FC<TopBarProps> = ({
 
       {/* Right: Authorization Queue, Telemetry, Clock & User Profile */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        {/* Tactical AI Sensor Simulation Trigger */}
+        {onStartSimulation && (
+          <button
+            onClick={onStartSimulation}
+            disabled={isSimulating}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              background: isSimulating ? '#1e293b' : '#042f2e',
+              border: isSimulating ? '1px solid #475569' : '1px solid #0d9488',
+              color: isSimulating ? '#94a3b8' : '#2dd4bf',
+              borderRadius: '2px',
+              padding: '0 10px',
+              height: '28px',
+              fontSize: '10px',
+              fontWeight: 700,
+              cursor: isSimulating ? 'not-allowed' : 'pointer',
+              letterSpacing: '0.04em'
+            }}
+            title="Trigger real-time Hugging Face YOLO multi-sensor threat simulation"
+          >
+            <Activity size={12} className={isSimulating ? 'animate-spin' : ''} />
+            <span>{isSimulating ? 'SIMULATING...' : '▶ START SIMULATION'}</span>
+          </button>
+        )}
+
         {/* Authorization Queue */}
         <button
           onClick={() => onNavigate('authorization_queue')}

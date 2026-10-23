@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { 
   Play,
   Pause,
-  ExternalLink,
   Layers
 } from 'lucide-react';
 import type { WidgetConfig, ThreatLevel, PageId } from '../../types';
+import { PrecisionIndiaMap } from '../map/PrecisionIndiaMap';
 
 interface WidgetContentRendererProps {
   widget: WidgetConfig;
@@ -24,126 +24,15 @@ export const WidgetContentRenderer: React.FC<WidgetContentRendererProps> = ({
   switch (widget.type) {
     case 'regional_map':
       return (
-        <div style={{ height: '100%', display: 'flex', flexDirection: 'column', position: 'relative' }}>
-          {/* Map Status Overlay */}
-          <div style={{
-            position: 'absolute',
-            top: '6px',
-            left: '6px',
-            zIndex: 10,
-            background: 'rgba(15, 17, 21, 0.92)',
-            border: '1px solid var(--border-subtle)',
-            borderRadius: '2px',
-            padding: '3px 6px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            fontSize: '10px'
-          }}>
-            <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>SECTOR GRID 34.08° N, 74.79° E</span>
-          </div>
-
-          <button
-            onClick={() => onNavigate('map')}
-            style={{
-              position: 'absolute',
-              top: '6px',
-              right: '6px',
-              zIndex: 10,
-              background: 'var(--bg-surface-elevated)',
-              border: '1px solid var(--border-focus)',
-              color: 'var(--text-secondary)',
-              borderRadius: '2px',
-              padding: '3px 6px',
-              fontSize: '10px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px'
+        <div style={{ height: '100%', width: '100%', position: 'relative' }}>
+          <PrecisionIndiaMap
+            compact={true}
+            onExpand={() => onNavigate('map')}
+            onSelectIncident={(id) => {
+              if (onSelectIncident) onSelectIncident(id);
+              onNavigate('incident_details');
             }}
-          >
-            <ExternalLink size={10} />
-            <span>GIS Fullscreen</span>
-          </button>
-
-          {/* Minimalist Matte Vector Map Canvas */}
-          <div style={{
-            flex: 1,
-            background: '#0a0c10',
-            position: 'relative',
-            overflow: 'hidden',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-            <svg width="100%" height="100%" viewBox="0 0 500 350" preserveAspectRatio="none">
-              {/* Subtle Hairline Grid */}
-              <line x1="0" y1="175" x2="500" y2="175" stroke="#161a22" strokeWidth="1" strokeDasharray="3 3" />
-              <line x1="250" y1="0" x2="250" y2="350" stroke="#161a22" strokeWidth="1" strokeDasharray="3 3" />
-              <circle cx="250" cy="175" r="90" fill="none" stroke="#181e28" strokeWidth="1" />
-              <circle cx="250" cy="175" r="45" fill="none" stroke="#181e28" strokeWidth="1" />
-
-              {/* Subdued Sector Perimeter Outline */}
-              <path 
-                d="M 120 70 Q 180 30 250 50 T 320 120 Q 380 180 340 260 T 250 320 Q 180 260 160 210 Z" 
-                fill="#10141c" 
-                stroke="#242c3b" 
-                strokeWidth="1"
-              />
-
-              {/* Sensor Nodes (Muted Green) */}
-              <circle cx="200" cy="90" r="3" fill="#10b981" />
-              <circle cx="260" cy="110" r="3" fill="#10b981" />
-              <circle cx="310" cy="170" r="3" fill="#10b981" />
-              <circle cx="220" cy="180" r="3" fill="#10b981" />
-              <circle cx="180" cy="230" r="3" fill="#10b981" />
-
-              {/* Active Threat Node (Muted Rust Red L4) */}
-              <circle cx="205" cy="88" r="8" fill="none" stroke="#ea580c" strokeWidth="1" />
-              <circle cx="205" cy="88" r="3.5" fill="#ea580c" />
-            </svg>
-
-            {/* Tactical Marker Card */}
-            <div 
-              onClick={() => onNavigate('incident_details')}
-              style={{
-                position: 'absolute',
-                top: '50px',
-                left: '85px',
-                background: 'rgba(20, 23, 29, 0.95)',
-                border: '1px solid var(--border-active)',
-                borderRadius: '2px',
-                padding: '5px 8px',
-                boxShadow: 'var(--shadow-panel)',
-                cursor: 'pointer'
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                <span className="badge-threat badge-threat-l4">L4 HIGH</span>
-                <span style={{ fontSize: '10px', fontWeight: 700, color: '#e2e8f0' }}>INC-2026-9041</span>
-              </div>
-              <div style={{ fontSize: '9px', color: 'var(--text-secondary)', marginTop: '2px' }}>
-                North Sector 4 • Movement Flagged
-              </div>
-            </div>
-          </div>
-
-          {/* Bottom telemetry */}
-          <div style={{
-            height: '24px',
-            background: 'var(--bg-surface-elevated)',
-            borderTop: '1px solid var(--border-subtle)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '0 8px',
-            fontSize: '9px',
-            color: 'var(--text-muted)'
-          }}>
-            <div>Sensors: <strong style={{ color: 'var(--status-healthy)' }}>48 Active</strong></div>
-            <div>Geofences: <strong style={{ color: 'var(--text-secondary)' }}>6 Armed</strong></div>
-            <div>Datum: <strong style={{ color: 'var(--text-secondary)' }}>WGS-84</strong></div>
-          </div>
+          />
         </div>
       );
 

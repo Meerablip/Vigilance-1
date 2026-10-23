@@ -123,6 +123,19 @@ export const apiClient = {
 
   // Incidents & Authorization
   getIncidents: () => apiClient.request<any[]>('/incidents/'),
+  getIncident: (incidentId: string) => apiClient.request<any>(`/incidents/${incidentId}`),
+  evaluateThreat: (data: {
+    threat_level: string;
+    confidence: number;
+    location_id: string;
+    summary: string;
+    description: string;
+    sensors_contributing: string[];
+    sensor_disagreement?: boolean;
+  }) => apiClient.request<any>('/incidents/evaluate', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
   getAuthorizationQueue: () => apiClient.request<any[]>('/authorizations/queue'),
   submitDecision: (authId: string, data: { decision: string; reason: string; reviewer_identity: string }) => apiClient.request<any>(`/authorizations/${authId}/decide`, {
     method: 'POST',

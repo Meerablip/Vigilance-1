@@ -8,11 +8,13 @@ import { BootstrapSetupModal } from './components/auth/BootstrapSetupModal';
 import { InviteSignupModal } from './components/auth/InviteSignupModal';
 import { apiClient } from './api/client';
 import type { PageId, ThreatLevel } from './types';
+import { PrecisionIndiaMap } from './components/map/PrecisionIndiaMap';
 import { 
   ShieldAlert, 
-  Map, 
   ClipboardCheck, 
-  Activity
+  Activity,
+  AlertOctagon,
+  X
 } from 'lucide-react';
 
 export const App: React.FC = () => {
@@ -41,6 +43,15 @@ export const App: React.FC = () => {
   const [authQueueCount, setAuthQueueCount] = useState<number>(3);
   const highestThreatLevel: ThreatLevel = 'L4';
   const activeThreatCount = 2;
+
+  // AI Recon Simulation State
+  const [isSimulating, setIsSimulating] = useState<boolean>(false);
+  const [simulationToast, setSimulationToast] = useState<{
+    show: boolean;
+    title: string;
+    message: string;
+    threatLevel: ThreatLevel;
+  } | null>(null);
 
   // On mount: check system status and URL invite token
   useEffect(() => {
@@ -92,36 +103,58 @@ export const App: React.FC = () => {
     alert(`Welcome, Officer ${user.officer_name}. Access granted under role: ${user.role.toUpperCase()}`);
   };
 
+  const handleStartSimulation = async () => {
+    setIsSimulating(true);
+    try {
+      await apiClient.evaluateThreat({
+        threat_level: 'L4',
+        confidence: 91.8,
+        location_id: 'LOC-NORTH-01',
+        summary: 'AI RECON DETECTED: Armed Convoy Incursion in Northern Zone Beta',
+        description: 'Ready-to-use Hugging Face YOLOv8 VisDrone model detected 1x Transport Truck, 4x Personnel crossing perimeter 34.1450°N, 74.7300°E. Correlated with GS-02 Radar velocity. Auto-evaluated as L4 High Threat.',
+        sensors_contributing: ['CAM-NORTH-04', 'RAD-NORTH-02', 'THM-NORTH-03']
+      });
+
+      setAuthQueueCount(prev => prev + 1);
+      setSimulationToast({
+        show: true,
+        title: 'L4 THREAT INGESTION SIMULATED',
+        message: 'Hugging Face YOLOv8 detected breach. Incident committed to Neon DB & routed to Officer Meera Chaudhari review queue.',
+        threatLevel: 'L4'
+      });
+    } catch (e) {
+      console.warn('Simulation backend call failed, falling back to local simulation:', e);
+      setAuthQueueCount(prev => prev + 1);
+      setSimulationToast({
+        show: true,
+        title: 'L4 THREAT INGESTION SIMULATED',
+        message: 'Multi-sensor perimeter breach registered. Incident routed to Officer Meera Chaudhari review queue.',
+        threatLevel: 'L4'
+      });
+    } finally {
+      setTimeout(() => {
+        setIsSimulating(false);
+      }, 1200);
+      setTimeout(() => {
+        setSimulationToast(null);
+      }, 7000);
+    }
+  };
+
   const renderOtherPage = () => {
     switch (currentPage) {
       case 'map':
         return (
-          <div style={{ flex: 1, padding: '20px', background: 'var(--bg-canvas)', color: 'var(--text-primary)', overflow: 'auto' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-              <Map size={20} color="var(--accent-tactical-active)" />
-              <h2 style={{ fontSize: '16px', fontWeight: 700, textTransform: 'uppercase' }}>Precision Tactical Map</h2>
-            </div>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '16px' }}>
-              High-precision defense sector grid with registered sensor telemetry and perimeter geofence markers.
-            </p>
-            <div style={{
-              height: '500px',
-              background: '#090d14',
-              border: '1px solid var(--border-subtle)',
-              borderRadius: '2px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              position: 'relative'
-            }}>
-              <div style={{ textAlign: 'center' }}>
-                <Map size={40} color="var(--border-focus)" style={{ marginBottom: '12px' }} />
-                <div style={{ fontSize: '13px', fontWeight: 600 }}>Precision GIS Tactical Engine</div>
-                <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
-                  Integrated in Section 3
-                </div>
-              </div>
-            </div>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#090A0D', position: 'relative', overflow: 'hidden' }}>
+            <PrecisionIndiaMap
+              compact={false}
+              onSelectIncident={(incId) => {
+                setSelectedIncidentId(incId);
+                setCurrentPage('incident_details');
+              }}
+              onStartSimulation={handleStartSimulation}
+              isSimulating={isSimulating}
+            />
           </div>
         );
 
@@ -341,6 +374,8 @@ export const App: React.FC = () => {
         onOpenInviteModal={() => setIsInviteModalOpen(true)}
         userName={currentUser.officer_name}
         userRole={currentUser.role}
+        onStartSimulation={handleStartSimulation}
+        isSimulating={isSimulating}
       />
 
       {/* Main Workspace with Collapsible Navigation Rail */}
@@ -394,6 +429,80 @@ export const App: React.FC = () => {
         onClose={() => setActiveInviteToken(null)}
         onComplete={handleInviteComplete}
       />
+
+      {/* 4. Tactical Threat Ingestion Toast Notification */}
+      {simulationToast && simulationToast.show && (
+        <div style={{
+          position: 'fixed',
+          top: '52px',
+          right: '16px',
+          zIndex: 9999,
+          background: 'rgba(15, 23, 42, 0.96)',
+          border: '1.5px solid var(--threat-l4)',
+          borderRadius: '2px',
+          padding: '12px 14px',
+          width: '380px',
+          boxShadow: '0 8px 30px rgba(0,0,0,0.8)',
+          display: 'flex',
+          gap: '10px'
+        }}>
+          <AlertOctagon size={20} color="var(--threat-l4)" style={{ flexShrink: 0, marginTop: '2px' }} />
+          <div style={{ flex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--threat-l4)', letterSpacing: '0.05em' }}>
+                {simulationToast.title}
+              </span>
+              <button
+                onClick={() => setSimulationToast(null)}
+                style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer' }}
+              >
+                <X size={12} />
+              </button>
+            </div>
+            <div style={{ fontSize: '11px', color: '#e2e8f0', marginTop: '4px', lineHeight: '1.4' }}>
+              {simulationToast.message}
+            </div>
+            <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+              <button
+                onClick={() => {
+                  setCurrentPage('authorization_queue');
+                  setSimulationToast(null);
+                }}
+                style={{
+                  background: 'var(--threat-l4)',
+                  color: '#000',
+                  border: 'none',
+                  padding: '3px 8px',
+                  borderRadius: '2px',
+                  fontSize: '10px',
+                  fontWeight: 700,
+                  cursor: 'pointer'
+                }}
+              >
+                REVIEW IN QUEUE
+              </button>
+              <button
+                onClick={() => {
+                  setCurrentPage('map');
+                  setSimulationToast(null);
+                }}
+                style={{
+                  background: 'transparent',
+                  border: '1px solid #475569',
+                  color: '#cbd5e1',
+                  padding: '3px 8px',
+                  borderRadius: '2px',
+                  fontSize: '10px',
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                VIEW ON SOI MAP
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
