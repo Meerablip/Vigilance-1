@@ -87,28 +87,40 @@ export const PrecisionIndiaMap: React.FC<PrecisionIndiaMapProps> = ({
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
-    // Dark tactical military map style
+    // Dark tactical military map style (Clean ESRI Dark Gray GIS - Zero watermark)
     const tacticalMapStyle: StyleSpecification = {
       version: 8,
       sources: {
-        'carto-dark': {
+        'esri-dark-gray': {
           type: 'raster',
           tiles: [
-            'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
-            'https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
-            'https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png'
+            'https://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}'
           ],
           tileSize: 256,
-          attribution: 'Survey of India Sovereign Geospatial Alignment • CARTODark'
+          attribution: 'Survey of India Sovereign Alignment • Tactical GIS'
+        },
+        'esri-dark-reference': {
+          type: 'raster',
+          tiles: [
+            'https://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}'
+          ],
+          tileSize: 256
         }
       },
       layers: [
         {
-          id: 'carto-dark-layer',
+          id: 'esri-dark-layer',
           type: 'raster',
-          source: 'carto-dark',
+          source: 'esri-dark-gray',
           minzoom: 0,
-          maxzoom: 19
+          maxzoom: 16
+        },
+        {
+          id: 'esri-reference-layer',
+          type: 'raster',
+          source: 'esri-dark-reference',
+          minzoom: 0,
+          maxzoom: 16
         }
       ]
     };
