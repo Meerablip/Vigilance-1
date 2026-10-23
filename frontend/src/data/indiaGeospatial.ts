@@ -293,3 +293,102 @@ export const INDIA_SOI_BOUNDARY_COORDS: [number, number][] = [
   [24.50, 70.80], [26.50, 70.30], [28.00, 71.50], [29.80, 73.80], [31.50, 74.80],
   [32.80, 74.90], [33.80, 74.20], [34.80, 74.10], [35.80, 74.50], [37.08, 74.60]
 ];
+
+// 6. Realistic Air & Surface Defense Radar Tracks (Realistic Track Symbology with Speed/Heading Vectors)
+export interface TacticalTrackPlot {
+  id: string;
+  callsign: string;
+  type: 'air_military' | 'air_unknown' | 'air_hostile' | 'surface_naval' | 'air_aew';
+  affiliation: 'friendly' | 'unknown' | 'hostile' | 'suspect';
+  coordinates: [number, number]; // [lat, lng]
+  headingDeg: number;
+  speedKts: number;
+  altitudeFt?: number;
+  squawkCode: string;
+  sourceRadarId: string;
+  history: [number, number][]; // recent position breadcrumbs
+}
+
+export const LIVE_TRACK_PLOTS: TacticalTrackPlot[] = [
+  {
+    id: 'TRK-AF-302',
+    callsign: 'TIGER-21 (IAF Su-30MKI CAP)',
+    type: 'air_military',
+    affiliation: 'friendly',
+    coordinates: [34.2500, 75.1200],
+    headingDeg: 140,
+    speedKts: 460,
+    altitudeFt: 28000,
+    squawkCode: '4120',
+    sourceRadarId: 'RAD-NORTH-02',
+    history: [
+      [34.3800, 74.9500],
+      [34.3200, 75.0300],
+      [34.2800, 75.0800]
+    ]
+  },
+  {
+    id: 'TRK-TG-804',
+    callsign: 'UNIDENTIFIED LOW-RCS CONTACT',
+    type: 'air_hostile',
+    affiliation: 'hostile',
+    coordinates: [34.1450, 74.7300],
+    headingDeg: 215,
+    speedKts: 185,
+    altitudeFt: 1400,
+    squawkCode: '0000',
+    sourceRadarId: 'RAD-NORTH-02',
+    history: [
+      [34.2200, 74.7900],
+      [34.1800, 74.7600],
+      [34.1600, 74.7450]
+    ]
+  },
+  {
+    id: 'TRK-EW-101',
+    callsign: 'NETRA-01 (IAF AEW&CS)',
+    type: 'air_aew',
+    affiliation: 'friendly',
+    coordinates: [29.9500, 74.3000],
+    headingDeg: 340,
+    speedKts: 390,
+    altitudeFt: 31000,
+    squawkCode: '5201',
+    sourceRadarId: 'RAD-NORTH-02',
+    history: [
+      [29.7000, 74.4000],
+      [29.8200, 74.3500]
+    ]
+  },
+  {
+    id: 'TRK-NV-501',
+    callsign: 'INS KOLKATA (D63)',
+    type: 'surface_naval',
+    affiliation: 'friendly',
+    coordinates: [18.7800, 72.6200],
+    headingDeg: 290,
+    speedKts: 22,
+    squawkCode: '3104',
+    sourceRadarId: 'RAD-WEST-01',
+    history: [
+      [18.7200, 72.7400],
+      [18.7500, 72.6800]
+    ]
+  },
+  {
+    id: 'TRK-UN-109',
+    callsign: 'SKYSURFER-42 (NON-CORRELATED)',
+    type: 'air_unknown',
+    affiliation: 'unknown',
+    coordinates: [18.9900, 72.5500],
+    headingDeg: 165,
+    speedKts: 230,
+    altitudeFt: 4200,
+    squawkCode: '7000',
+    sourceRadarId: 'RAD-WEST-01',
+    history: [
+      [19.1000, 72.5200],
+      [19.0400, 72.5350]
+    ]
+  }
+];
