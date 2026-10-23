@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { X, UserPlus, Copy, Check, ShieldCheck, Clock, MapPin, Key } from 'lucide-react';
+import { X, UserPlus, Copy, Check, ShieldCheck, Clock, MapPin, Key, AlertTriangle } from 'lucide-react';
 import type { UserRole } from '../../types';
+import { apiClient } from '../../api/client';
 
 interface InviteGeneratorModalProps {
   isOpen: boolean;
@@ -13,21 +14,30 @@ export const InviteGeneratorModal: React.FC<InviteGeneratorModalProps> = ({ isOp
   const [expiryHours, setExpiryHours] = useState<number>(24);
   const [generatedLink, setGeneratedLink] = useState<string>('');
   const [copied, setCopied] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
-  const handleGenerate = () => {
-    const tokenPayload = {
-      role: selectedRole,
-      region: selectedRegion,
-      exp: Date.now() + expiryHours * 3600 * 1000,
-      salt: Math.random().toString(36).substring(2, 10)
-    };
-    const encodedToken = btoa(JSON.stringify(tokenPayload));
-    const origin = window.location.origin || 'http://localhost:5173';
-    const link = `${origin}/signup?invite_token=${encodedToken}`;
-    setGeneratedLink(link);
-    setCopied(false);
+  const handleGenerate = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await apiClient.createInvite({
+        role: selectedRole,
+        sector: selectedRegion,
+        expiry_hours: expiryHours
+      });
+
+      const origin = window.location.origin || 'http://localhost:5173';
+      const link = `${origin}/?invite_token=${res.invite_token}`;
+      setGeneratedLink(link);
+      setCopied(false);
+    } catch (err: any) {
+      setError(err.message || 'Failed to generate token on database.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCopy = () => {
@@ -105,6 +115,13 @@ export const InviteGeneratorModal: React.FC<InviteGeneratorModalProps> = ({ isOp
 
         {/* Body */}
         <div style={{ padding: '14px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {error && (
+            <div style={{ background: 'rgba(220, 38, 38, 0.12)', border: '1px solid var(--threat-l5)', padding: '6px 8px', borderRadius: '2px', fontSize: '10px', color: 'var(--threat-l5)', display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <AlertTriangle size={12} />
+              <span>{error}</span>
+            </div>
+          )}
+
           <div style={{
             background: 'var(--bg-card)',
             border: '1px solid var(--border-subtle)',
@@ -115,7 +132,7 @@ export const InviteGeneratorModal: React.FC<InviteGeneratorModalProps> = ({ isOp
             lineHeight: 1.4
           }}>
             <ShieldCheck size={12} color="var(--text-primary)" style={{ display: 'inline', marginRight: '5px', verticalAlign: 'text-bottom' }} />
-            Public sign-up is disabled. Generates a single-use cryptographically bound invite link. The recipient must enroll Multi-Factor Authentication (MFA).
+            Single-use cryptographic token registered in Neon PostgreSQL. The recipient will be locked to the assigned role and required to configure Google Authenticator MFA.
           </div>
 
           {/* Role Selection */}
@@ -209,9 +226,10 @@ export const InviteGeneratorModal: React.FC<InviteGeneratorModalProps> = ({ isOp
             </div>
           </div>
 
-          {/* Generate Button - Muted Matte Charcoal / Steel */}
+          {/* Generate Button */}
           <button
             onClick={handleGenerate}
+            disabled={loading}
             style={{
               background: '#242a36',
               border: '1px solid #374254',
@@ -220,7 +238,7 @@ export const InviteGeneratorModal: React.FC<InviteGeneratorModalProps> = ({ isOp
               fontSize: '11px',
               padding: '8px',
               borderRadius: '2px',
-              cursor: 'pointer',
+              cursor: loading ? 'wait' : 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -230,7 +248,7 @@ export const InviteGeneratorModal: React.FC<InviteGeneratorModalProps> = ({ isOp
             }}
           >
             <Key size={12} />
-            <span>GENERATE PRIVATE SIGNUP URL</span>
+            <span>{loading ? 'RECORDING TOKEN IN NEON DB...' : 'GENERATE PRIVATE SIGNUP URL'}</span>
           </button>
 
           {/* Generated Link Display */}
@@ -245,7 +263,7 @@ export const InviteGeneratorModal: React.FC<InviteGeneratorModalProps> = ({ isOp
               gap: '6px'
             }}>
               <span style={{ fontSize: '9px', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
-                Secure Invite URL Generated (Single-Use)
+                Secure Invite URL Generated (Registered in Neon DB)
               </span>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -288,7 +306,7 @@ export const InviteGeneratorModal: React.FC<InviteGeneratorModalProps> = ({ isOp
               </div>
 
               <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>
-                Target role: <strong>{selectedRole.toUpperCase()}</strong> • Scope: <strong>{selectedRegion}</strong> • Token expires in {expiryHours}h.
+                Role: <strong>{selectedRole.toUpperCase()}</strong> • Scope: <strong>{selectedRegion}</strong> • Token recorded in Neon database.
               </div>
             </div>
           )}
