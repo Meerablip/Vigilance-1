@@ -92,16 +92,8 @@ export const App: React.FC = () => {
     alert(`Welcome, Officer ${user.officer_name}. Access granted under role: ${user.role.toUpperCase()}`);
   };
 
-  const renderActivePage = () => {
+  const renderOtherPage = () => {
     switch (currentPage) {
-      case 'workspace':
-        return (
-          <CheckeredCanvas
-            onNavigate={(page) => setCurrentPage(page)}
-            onSelectIncident={(id) => setSelectedIncidentId(id)}
-          />
-        );
-
       case 'map':
         return (
           <div style={{ flex: 1, padding: '20px', background: 'var(--bg-canvas)', color: 'var(--text-primary)', overflow: 'auto' }}>
@@ -363,7 +355,21 @@ export const App: React.FC = () => {
         />
 
         <div className="app-content">
-          {renderActivePage()}
+          {/* Workspace is kept persistently mounted so switching pages NEVER resets custom layouts or feeds */}
+          <div style={{
+            display: currentPage === 'workspace' ? 'flex' : 'none',
+            flex: 1,
+            height: '100%',
+            position: 'relative'
+          }}>
+            <CheckeredCanvas
+              onNavigate={(page) => setCurrentPage(page)}
+              onSelectIncident={(id) => setSelectedIncidentId(id)}
+            />
+          </div>
+
+          {/* Render other pages without unmounting the workspace */}
+          {currentPage !== 'workspace' && renderOtherPage()}
         </div>
       </div>
 

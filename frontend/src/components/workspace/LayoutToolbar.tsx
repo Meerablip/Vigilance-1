@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   FolderOpen, 
   RotateCcw, 
@@ -6,7 +6,8 @@ import {
   Lock, 
   Unlock, 
   Crosshair, 
-  Layers
+  Layers,
+  Check
 } from 'lucide-react';
 
 interface LayoutToolbarProps {
@@ -31,6 +32,34 @@ export const LayoutToolbar: React.FC<LayoutToolbarProps> = ({
   isIncidentMode
 }) => {
   const [showPresetsMenu, setShowPresetsMenu] = useState(false);
+  const [saveFeedback, setSaveFeedback] = useState(false);
+  const [resetFeedback, setResetFeedback] = useState(false);
+  const presetsRef = useRef<HTMLDivElement>(null);
+
+  // Close presets menu when clicking outside
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (presetsRef.current && !presetsRef.current.contains(e.target as Node)) {
+        setShowPresetsMenu(false);
+      }
+    };
+    if (showPresetsMenu) {
+      document.addEventListener('mousedown', handleOutsideClick);
+    }
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, [showPresetsMenu]);
+
+  const handleSaveClick = () => {
+    onSaveLayout();
+    setSaveFeedback(true);
+    setTimeout(() => setSaveFeedback(false), 2000);
+  };
+
+  const handleResetClick = () => {
+    onResetLayout();
+    setResetFeedback(true);
+    setTimeout(() => setResetFeedback(false), 1500);
+  };
 
   return (
     <div style={{
@@ -70,21 +99,22 @@ export const LayoutToolbar: React.FC<LayoutToolbarProps> = ({
         <div style={{ height: '12px', width: '1px', background: 'var(--border-subtle)' }} />
 
         {/* Load Preset Menu */}
-        <div style={{ position: 'relative' }}>
+        <div ref={presetsRef} style={{ position: 'relative' }}>
           <button
             onClick={() => setShowPresetsMenu(!showPresetsMenu)}
             style={{
               display: 'flex',
               alignItems: 'center',
               gap: '4px',
-              background: 'var(--bg-card)',
-              border: '1px solid var(--border-subtle)',
-              color: 'var(--text-secondary)',
+              background: showPresetsMenu ? 'var(--bg-card-hover)' : 'var(--bg-card)',
+              border: showPresetsMenu ? '1px solid var(--border-active)' : '1px solid var(--border-subtle)',
+              color: showPresetsMenu ? '#f1f5f9' : 'var(--text-secondary)',
               padding: '3px 7px',
               borderRadius: '2px',
               fontSize: '10px',
               cursor: 'pointer'
             }}
+            title="Load Predefined Workspace Configurations"
           >
             <FolderOpen size={11} />
             <span>Presets</span>
@@ -94,17 +124,16 @@ export const LayoutToolbar: React.FC<LayoutToolbarProps> = ({
             <div 
               style={{
                 position: 'absolute',
-                top: '26px',
+                top: '28px',
                 left: 0,
-                width: '170px',
+                width: '190px',
                 background: 'var(--bg-surface-elevated)',
-                border: '1px solid var(--border-focus)',
+                border: '1px solid var(--border-active)',
                 borderRadius: '2px',
                 boxShadow: 'var(--shadow-panel)',
-                padding: '3px',
+                padding: '4px',
                 zIndex: 1000
               }}
-              onMouseLeave={() => setShowPresetsMenu(false)}
             >
               <div 
                 className="context-item"
@@ -112,74 +141,87 @@ export const LayoutToolbar: React.FC<LayoutToolbarProps> = ({
                   onLoadPreset('commander');
                   setShowPresetsMenu(false);
                 }}
+                style={{ padding: '6px 8px' }}
               >
-                Commander Overview
+                <div>
+                  <div style={{ fontWeight: 600, color: '#f1f5f9', fontSize: '11px' }}>Commander Overview</div>
+                  <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Map, Feeds, Triage & Policy</div>
+                </div>
               </div>
+
               <div 
                 className="context-item"
                 onClick={() => {
                   onLoadPreset('operator');
                   setShowPresetsMenu(false);
                 }}
+                style={{ padding: '6px 8px' }}
               >
-                Operator Feeds
+                <div>
+                  <div style={{ fontWeight: 600, color: '#f1f5f9', fontSize: '11px' }}>Operator Feeds</div>
+                  <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Large Optical Recon & Triage</div>
+                </div>
               </div>
+
               <div 
                 className="context-item"
                 onClick={() => {
                   onLoadPreset('analyst');
                   setShowPresetsMenu(false);
                 }}
+                style={{ padding: '6px 8px' }}
               >
-                Analyst Fusion
+                <div>
+                  <div style={{ fontWeight: 600, color: '#f1f5f9', fontSize: '11px' }}>Analyst Fusion</div>
+                  <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Cross-Sensor Fusion & Health</div>
+                </div>
               </div>
             </div>
           )}
         </div>
 
-        {/* Save Layout */}
+        {/* Save Layout Button */}
         <button
-          onClick={onSaveLayout}
+          onClick={handleSaveClick}
           style={{
             display: 'flex',
             alignItems: 'center',
             gap: '4px',
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border-subtle)',
-            color: 'var(--text-secondary)',
+            background: saveFeedback ? 'rgba(16, 185, 129, 0.12)' : 'var(--bg-card)',
+            border: saveFeedback ? '1px solid var(--status-healthy)' : '1px solid var(--border-subtle)',
+            color: saveFeedback ? 'var(--status-healthy)' : 'var(--text-secondary)',
             padding: '3px 7px',
             borderRadius: '2px',
             fontSize: '10px',
-            cursor: 'pointer'
+            cursor: 'pointer',
+            transition: 'all 0.15s ease'
           }}
-          title="Save current layout"
+          title="Save layout configuration to persistent memory"
         >
-          <Save size={11} />
-          <span>Save</span>
+          {saveFeedback ? <Check size={11} color="var(--status-healthy)" /> : <Save size={11} />}
+          <span>{saveFeedback ? 'Saved ✓' : 'Save'}</span>
         </button>
 
-        {/* Reset Layout */}
+        {/* Reset Layout Button */}
         <button
-          onClick={() => {
-            if (window.confirm('Reset workspace to default layout?')) {
-              onResetLayout();
-            }
-          }}
+          onClick={handleResetClick}
           style={{
             display: 'flex',
             alignItems: 'center',
             gap: '3px',
-            background: 'none',
-            border: 'none',
-            color: 'var(--text-muted)',
-            padding: '3px 5px',
+            background: resetFeedback ? 'rgba(234, 88, 12, 0.1)' : 'transparent',
+            border: resetFeedback ? '1px solid var(--threat-l4)' : '1px solid transparent',
+            color: resetFeedback ? 'var(--threat-l4)' : 'var(--text-muted)',
+            padding: '3px 6px',
+            borderRadius: '2px',
             fontSize: '10px',
-            cursor: 'pointer'
+            cursor: 'pointer',
+            transition: 'all 0.15s ease'
           }}
-          title="Restore default layout"
+          title="Reset to default multi-module layout"
         >
           <RotateCcw size={11} />
-          <span>Reset</span>
+          <span>{resetFeedback ? 'Reset ✓' : 'Reset'}</span>
         </button>
       </div>
 

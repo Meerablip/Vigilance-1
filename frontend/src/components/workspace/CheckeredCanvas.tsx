@@ -69,7 +69,7 @@ const OPERATOR_TACTICAL_LAYOUT: WidgetConfig[] = [
     category: 'live_monitoring',
     x: 0,
     y: 0,
-    w: 21,
+    w: 22,
     h: 28,
     minW: 14,
     minH: 12
@@ -79,9 +79,9 @@ const OPERATOR_TACTICAL_LAYOUT: WidgetConfig[] = [
     type: 'regional_map',
     title: 'Sector Map',
     category: 'situational_awareness',
-    x: 21,
+    x: 22,
     y: 0,
-    w: 20,
+    w: 19,
     h: 15,
     minW: 12,
     minH: 10
@@ -91,11 +91,50 @@ const OPERATOR_TACTICAL_LAYOUT: WidgetConfig[] = [
     type: 'alert_queue',
     title: 'Triage Queue',
     category: 'alerts_decisions',
-    x: 21,
+    x: 22,
     y: 15,
-    w: 20,
+    w: 19,
     h: 13,
     minW: 12,
+    minH: 8
+  }
+];
+
+const ANALYST_FUSION_LAYOUT: WidgetConfig[] = [
+  {
+    id: 'w-fused',
+    type: 'fused_summary',
+    title: '5-Level Policy Distribution',
+    category: 'data_fusion',
+    x: 0,
+    y: 0,
+    w: 21,
+    h: 15,
+    minW: 12,
+    minH: 10
+  },
+  {
+    id: 'w-health',
+    type: 'system_health_card',
+    title: 'Subsystem Telemetry',
+    category: 'operations',
+    x: 21,
+    y: 0,
+    w: 20,
+    h: 15,
+    minW: 12,
+    minH: 10
+  },
+  {
+    id: 'w-alerts',
+    type: 'alert_queue',
+    title: 'Historical Alert Queue',
+    category: 'alerts_decisions',
+    x: 0,
+    y: 15,
+    w: 41,
+    h: 14,
+    minW: 14,
     minH: 8
   }
 ];
@@ -105,10 +144,19 @@ export const CheckeredCanvas: React.FC<CheckeredCanvasProps> = ({
   onSelectIncident
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  
+  // Load layout from localStorage or fallback to default
   const [widgets, setWidgets] = useState<WidgetConfig[]>(() => {
     const saved = localStorage.getItem('vigilance_workspace_layout');
     if (saved) {
-      try { return JSON.parse(saved); } catch (e) { /* fallback */ }
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      } catch (e) {
+        /* fallback */
+      }
     }
     return DEFAULT_COMMANDER_LAYOUT;
   });
@@ -119,8 +167,21 @@ export const CheckeredCanvas: React.FC<CheckeredCanvasProps> = ({
   const [focusedWidgetId, setFocusedWidgetId] = useState<string | null>(null);
   const [canvasDimensions, setCanvasDimensions] = useState({ width: 1400, height: 800 });
   const [isDragOver, setIsDragOver] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const GRID_SIZE = 24;
+
+  // Auto-persist widgets on any change so switching pages never loses progress
+  useEffect(() => {
+    if (widgets && widgets.length > 0) {
+      localStorage.setItem('vigilance_workspace_layout', JSON.stringify(widgets));
+    }
+  }, [widgets]);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 2500);
+  };
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -153,6 +214,7 @@ export const CheckeredCanvas: React.FC<CheckeredCanvasProps> = ({
       y: Math.min(widget.y + 2, 20)
     };
     setWidgets(prev => [...prev, newWidget]);
+    showToast(`Duplicated ${widget.title}`);
   };
 
   // Drag and Drop from Widget Library onto Canvas
@@ -163,7 +225,6 @@ export const CheckeredCanvas: React.FC<CheckeredCanvasProps> = ({
   };
 
   const handleDragLeave = (e: React.DragEvent) => {
-    // Only unset if leaving canvas
     if (e.currentTarget === e.target) {
       setIsDragOver(false);
     }
@@ -198,6 +259,7 @@ export const CheckeredCanvas: React.FC<CheckeredCanvasProps> = ({
 
         setWidgets(prev => [...prev, newWidget]);
         setFocusedWidgetId(newWidget.id);
+        showToast(`Deployed ${newWidget.title} to canvas`);
       }
     } catch (err) {
       console.error('Failed to parse dropped widget', err);
@@ -206,23 +268,25 @@ export const CheckeredCanvas: React.FC<CheckeredCanvasProps> = ({
 
   const handleSaveLayout = () => {
     localStorage.setItem('vigilance_workspace_layout', JSON.stringify(widgets));
-    alert('Workspace layout configuration saved.');
+    showToast('Workspace layout saved to profile');
   };
 
   const handleResetLayout = () => {
     setWidgets(DEFAULT_COMMANDER_LAYOUT);
-    localStorage.removeItem('vigilance_workspace_layout');
+    localStorage.setItem('vigilance_workspace_layout', JSON.stringify(DEFAULT_COMMANDER_LAYOUT));
+    showToast('Layout reset to default configuration');
   };
 
   const handleLoadPreset = (preset: 'operator' | 'commander' | 'analyst') => {
-    if (preset === 'operator') setWidgets(OPERATOR_TACTICAL_LAYOUT);
-    else if (preset === 'commander') setWidgets(DEFAULT_COMMANDER_LAYOUT);
-    else {
-      setWidgets([
-        { id: 'w-fused', type: 'fused_summary', title: 'Fusion Summary', category: 'data_fusion', x: 0, y: 0, w: 20, h: 16 },
-        { id: 'w-health', type: 'system_health_card', title: 'System Health', category: 'operations', x: 20, y: 0, w: 21, h: 16 },
-        { id: 'w-alerts', type: 'alert_queue', title: 'Historical Alerts', category: 'alerts_decisions', x: 0, y: 16, w: 41, h: 14 }
-      ]);
+    if (preset === 'operator') {
+      setWidgets(OPERATOR_TACTICAL_LAYOUT);
+      showToast('Loaded: Operator Feeds Preset');
+    } else if (preset === 'commander') {
+      setWidgets(DEFAULT_COMMANDER_LAYOUT);
+      showToast('Loaded: Commander Overview Preset');
+    } else {
+      setWidgets(ANALYST_FUSION_LAYOUT);
+      showToast('Loaded: Analyst Fusion Preset');
     }
   };
 
@@ -230,13 +294,20 @@ export const CheckeredCanvas: React.FC<CheckeredCanvasProps> = ({
     if (!isIncidentMode) {
       setIsIncidentMode(true);
       setWidgets([
-        { id: 'w-inc-map', type: 'regional_map', title: 'INCIDENT FOCUS • NORTH SECTOR', category: 'situational_awareness', x: 0, y: 0, w: 20, h: 28 },
-        { id: 'w-inc-cctv', type: 'cctv_feeds', title: 'PRIMARY SENSOR CAM-NORTH-04', category: 'live_monitoring', x: 20, y: 0, w: 21, h: 16 },
-        { id: 'w-inc-alerts', type: 'alert_queue', title: 'CORRELATED EVIDENCE', category: 'alerts_decisions', x: 20, y: 16, w: 21, h: 12 }
+        { id: 'w-inc-map', type: 'regional_map', title: 'INCIDENT FOCUS • NORTH SECTOR', category: 'situational_awareness', x: 0, y: 0, w: 22, h: 28 },
+        { id: 'w-inc-cctv', type: 'cctv_feeds', title: 'PRIMARY SENSOR CAM-NORTH-04', category: 'live_monitoring', x: 22, y: 0, w: 19, h: 16 },
+        { id: 'w-inc-alerts', type: 'alert_queue', title: 'CORRELATED EVIDENCE', category: 'alerts_decisions', x: 22, y: 16, w: 19, h: 12 }
       ]);
+      showToast('Activated Incident Focus Layout');
     } else {
       setIsIncidentMode(false);
-      setWidgets(DEFAULT_COMMANDER_LAYOUT);
+      const saved = localStorage.getItem('vigilance_workspace_layout');
+      if (saved) {
+        try { setWidgets(JSON.parse(saved)); } catch (e) { setWidgets(DEFAULT_COMMANDER_LAYOUT); }
+      } else {
+        setWidgets(DEFAULT_COMMANDER_LAYOUT);
+      }
+      showToast('Exited Incident Focus');
     }
   };
 
@@ -252,6 +323,29 @@ export const CheckeredCanvas: React.FC<CheckeredCanvasProps> = ({
         onToggleIncidentMode={handleToggleIncidentMode}
         isIncidentMode={isIncidentMode}
       />
+
+      {/* Floating Military Status Toast */}
+      {toastMessage && (
+        <div style={{
+          position: 'absolute',
+          top: '38px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          background: 'rgba(20, 23, 29, 0.95)',
+          border: '1px solid var(--border-active)',
+          color: '#f1f5f9',
+          padding: '4px 12px',
+          borderRadius: '2px',
+          fontSize: '10px',
+          fontWeight: 600,
+          letterSpacing: '0.3px',
+          boxShadow: 'var(--shadow-panel)',
+          zIndex: 800,
+          pointerEvents: 'none'
+        }}>
+          {toastMessage}
+        </div>
+      )}
 
       <div 
         ref={containerRef}
