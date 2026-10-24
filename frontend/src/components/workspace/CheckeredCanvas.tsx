@@ -181,11 +181,23 @@ export const CheckeredCanvas: React.FC<CheckeredCanvasProps> = ({
   });
 
   const [isLocked, setIsLocked] = useState<boolean>(false);
+  const [isZoomLocked, setIsZoomLocked] = useState<boolean>(() => {
+    return localStorage.getItem('vigilance_workspace_zoom_locked') === 'true';
+  });
   const [isLibraryOpen, setIsLibraryOpen] = useState<boolean>(false);
   const [focusedWidgetId, setFocusedWidgetId] = useState<string | null>(null);
   const [isIncidentMode, setIsIncidentMode] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState<boolean>(false);
+
+  const handleToggleZoomLock = () => {
+    setIsZoomLocked(prev => {
+      const next = !prev;
+      localStorage.setItem('vigilance_workspace_zoom_locked', String(next));
+      showToast(next ? 'Modular board zoom LOCKED (frozen)' : 'Modular board zoom UNLOCKED');
+      return next;
+    });
+  };
 
   // Endless Virtual Canvas Panning & Zoom State
   const [panOffset, setPanOffset] = useState<{ x: number; y: number }>(() => {
@@ -270,6 +282,7 @@ export const CheckeredCanvas: React.FC<CheckeredCanvasProps> = ({
       if (e.ctrlKey) {
         // Zoom centered on cursor on blank space
         e.preventDefault();
+        if (isZoomLocked) return;
         const zoomFactor = e.deltaY < 0 ? 1.08 : 0.92;
         setZoom(prevZoom => Math.max(0.4, Math.min(1.6, prevZoom * zoomFactor)));
       } else {
@@ -288,7 +301,7 @@ export const CheckeredCanvas: React.FC<CheckeredCanvasProps> = ({
     return () => {
       container.removeEventListener('wheel', handleNativeWheel);
     };
-  }, []);
+  }, [isZoomLocked]);
 
   // Panning handlers (middle click, spacebar + left click, or drag on empty canvas background)
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -496,6 +509,8 @@ export const CheckeredCanvas: React.FC<CheckeredCanvasProps> = ({
       <LayoutToolbar
         isLocked={isLocked}
         onToggleLock={() => setIsLocked(!isLocked)}
+        isZoomLocked={isZoomLocked}
+        onToggleZoomLock={handleToggleZoomLock}
         onOpenWidgetLibrary={() => setIsLibraryOpen(!isLibraryOpen)}
         onResetLayout={handleResetLayout}
         onSaveLayout={handleSaveLayout}
@@ -855,15 +870,35 @@ export const CheckeredCanvas: React.FC<CheckeredCanvasProps> = ({
                 </span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
                   <button
-                    onClick={() => setZoom(prev => Math.max(0.4, prev - 0.1))}
-                    style={{ background: '#181a1f', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', borderRadius: '2px', padding: '1px 4px', cursor: 'pointer' }}
+                    disabled={isZoomLocked}
+                    onClick={() => !isZoomLocked && setZoom(prev => Math.max(0.4, prev - 0.1))}
+                    style={{
+                      background: isZoomLocked ? '#121417' : '#181a1f',
+                      border: '1px solid var(--border-subtle)',
+                      color: isZoomLocked ? '#64748b' : 'var(--text-primary)',
+                      borderRadius: '2px',
+                      padding: '1px 4px',
+                      cursor: isZoomLocked ? 'not-allowed' : 'pointer'
+                    }}
+                    title={isZoomLocked ? 'Zoom is locked' : 'Zoom Out'}
                   >
                     <ZoomOut size={9} />
                   </button>
-                  <span style={{ fontFamily: 'monospace', color: 'var(--military-green-text)' }}>{Math.round(zoom * 100)}%</span>
+                  <span style={{ fontFamily: 'monospace', color: isZoomLocked ? '#38bdf8' : 'var(--military-green-text)' }}>
+                    {Math.round(zoom * 100)}%{isZoomLocked ? ' 🔒' : ''}
+                  </span>
                   <button
-                    onClick={() => setZoom(prev => Math.min(1.6, prev + 0.1))}
-                    style={{ background: '#181a1f', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', borderRadius: '2px', padding: '1px 4px', cursor: 'pointer' }}
+                    disabled={isZoomLocked}
+                    onClick={() => !isZoomLocked && setZoom(prev => Math.min(1.6, prev + 0.1))}
+                    style={{
+                      background: isZoomLocked ? '#121417' : '#181a1f',
+                      border: '1px solid var(--border-subtle)',
+                      color: isZoomLocked ? '#64748b' : 'var(--text-primary)',
+                      borderRadius: '2px',
+                      padding: '1px 4px',
+                      cursor: isZoomLocked ? 'not-allowed' : 'pointer'
+                    }}
+                    title={isZoomLocked ? 'Zoom is locked' : 'Zoom In'}
                   >
                     <ZoomIn size={9} />
                   </button>

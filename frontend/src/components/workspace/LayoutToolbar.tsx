@@ -7,12 +7,15 @@ import {
   Unlock, 
   Crosshair, 
   Layers,
-  Check
+  Check,
+  ZoomIn
 } from 'lucide-react';
 
 interface LayoutToolbarProps {
   isLocked: boolean;
   onToggleLock: () => void;
+  isZoomLocked: boolean;
+  onToggleZoomLock: () => void;
   onOpenWidgetLibrary: () => void;
   onResetLayout: () => void;
   onSaveLayout: () => void;
@@ -24,6 +27,8 @@ interface LayoutToolbarProps {
 export const LayoutToolbar: React.FC<LayoutToolbarProps> = ({
   isLocked,
   onToggleLock,
+  isZoomLocked,
+  onToggleZoomLock,
   onOpenWidgetLibrary,
   onResetLayout,
   onSaveLayout,
@@ -265,10 +270,32 @@ export const LayoutToolbar: React.FC<LayoutToolbarProps> = ({
             fontSize: '10px',
             cursor: 'pointer'
           }}
-          title={isLocked ? 'Unlock layout' : 'Lock layout'}
+          title={isLocked ? 'Unlock module layout' : 'Lock module layout'}
         >
           {isLocked ? <Lock size={11} /> : <Unlock size={11} />}
-          <span>{isLocked ? 'Locked' : 'Unlocked'}</span>
+          <span>{isLocked ? 'Layout Locked' : 'Layout Unlocked'}</span>
+        </button>
+
+        {/* Lock Zoom of Modular Board */}
+        <button
+          onClick={onToggleZoomLock}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            background: isZoomLocked ? 'rgba(56, 189, 248, 0.14)' : 'var(--bg-card)',
+            border: isZoomLocked ? '1px solid rgba(56, 189, 248, 0.5)' : '1px solid var(--border-subtle)',
+            color: isZoomLocked ? '#38bdf8' : 'var(--text-secondary)',
+            padding: '3px 7px',
+            borderRadius: '2px',
+            fontSize: '10px',
+            fontWeight: isZoomLocked ? 700 : 500,
+            cursor: 'pointer'
+          }}
+          title={isZoomLocked ? 'Zoom is locked (board cannot be zoomed in or out)' : 'Lock zoom level of the modular board'}
+        >
+          {isZoomLocked ? <Lock size={11} color="#38bdf8" /> : <ZoomIn size={11} />}
+          <span>{isZoomLocked ? 'Zoom Locked' : 'Zoom Unlocked'}</span>
         </button>
       </div>
     </div>
