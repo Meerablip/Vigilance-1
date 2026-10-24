@@ -12,8 +12,10 @@ import { PrecisionIndiaMap } from './components/map/PrecisionIndiaMap';
 import { TacticalVideoFeed, TACTICAL_FEEDS } from './components/feeds/TacticalVideoFeed';
 import { AuthorizationQueueDesk } from './components/decision/AuthorizationQueueDesk';
 import { ConnectedSystemsPanel } from './components/decision/ConnectedSystemsPanel';
+import { IncidentDetailsView } from './components/investigation/IncidentDetailsView';
+import { IncidentPlaybackView } from './components/investigation/IncidentPlaybackView';
+import { SensorFusionView } from './components/investigation/SensorFusionView';
 import { 
-  ShieldAlert, 
   Activity,
   AlertOctagon,
   X,
@@ -44,7 +46,7 @@ export const App: React.FC = () => {
     sector: 'National Command HQ'
   });
 
-  const [_selectedIncidentId, setSelectedIncidentId] = useState<string>('INC-2026-9041');
+  const [selectedIncidentId, setSelectedIncidentId] = useState<string>('INC-2026-9041');
   const [authQueueCount, setAuthQueueCount] = useState<number>(3);
   const highestThreatLevel: ThreatLevel = 'L4';
   const activeThreatCount = 2;
@@ -348,104 +350,27 @@ export const App: React.FC = () => {
       case 'alerts':
       case 'incident_details':
         return (
-          <div style={{ flex: 1, padding: '20px', background: 'var(--bg-canvas)', color: 'var(--text-primary)', overflow: 'auto' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <ShieldAlert size={18} color="var(--threat-l4)" />
-                <h2 style={{ fontSize: '16px', fontWeight: 700 }}>INCIDENT DEEP-DIVE • INC-2026-9041</h2>
-              </div>
-              <button 
-                onClick={() => setCurrentPage('workspace')}
-                style={{
-                  background: 'var(--bg-card)',
-                  border: '1px solid var(--border-subtle)',
-                  color: 'var(--text-secondary)',
-                  padding: '5px 10px',
-                  borderRadius: '2px',
-                  fontSize: '11px',
-                  cursor: 'pointer'
-                }}
-              >
-                Back to Workspace
-              </button>
-            </div>
+          <IncidentDetailsView
+            incidentId={selectedIncidentId}
+            onNavigate={(page) => setCurrentPage(page)}
+            currentUser={currentUser}
+          />
+        );
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '16px' }}>
-              <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: '2px', padding: '16px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                  <span className="badge-threat badge-threat-l4">L4 HIGH SEVERITY</span>
-                  <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Detected: 2m ago</span>
-                  <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Sector: Northern Frontier Line</span>
-                </div>
-                <h3 style={{ fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>
-                  Unidentified Heavy Vehicle & Multi-Person Movement Near Restricted Geofence
-                </h3>
-                <p style={{ fontSize: '11px', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: '16px' }}>
-                  Optical sensor CAM-NORTH-04 and Ground Doppler Radar GS-RAD-02 detected correlated movements crossing perimeter Zone B. VisDrone YOLO model reported Person (91% confidence) and Truck (94% confidence). Requires Commander Authorization under Policy Rule 4.2.
-                </p>
+      case 'playback':
+        return (
+          <IncidentPlaybackView
+            incidentId={selectedIncidentId}
+            onNavigate={(page) => setCurrentPage(page)}
+          />
+        );
 
-                <div style={{ display: 'flex', gap: '10px' }}>
-                  <button
-                    onClick={() => setCurrentPage('authorization_queue')}
-                    style={{
-                      background: '#242a36',
-                      border: '1px solid #374254',
-                      color: '#fff',
-                      fontWeight: 700,
-                      padding: '7px 14px',
-                      borderRadius: '2px',
-                      fontSize: '11px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Open Authorization Review Queue
-                  </button>
-                  <button
-                    onClick={() => setCurrentPage('fusion')}
-                    style={{
-                      background: 'var(--bg-card)',
-                      border: '1px solid var(--border-subtle)',
-                      color: 'var(--text-secondary)',
-                      padding: '7px 12px',
-                      borderRadius: '2px',
-                      fontSize: '11px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Inspect Sensor Disagreement
-                  </button>
-                </div>
-              </div>
-
-              <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: '2px', padding: '16px' }}>
-                <h4 style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '10px', textTransform: 'uppercase' }}>
-                  5-Vector Status Breakdown
-                </h4>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '11px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px', background: 'var(--bg-card)', borderRadius: '2px' }}>
-                    <span style={{ color: 'var(--text-secondary)' }}>Threat Level</span>
-                    <strong style={{ color: 'var(--threat-l4)' }}>L4 — High Severity</strong>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px', background: 'var(--bg-card)', borderRadius: '2px' }}>
-                    <span style={{ color: 'var(--text-secondary)' }}>Model Confidence</span>
-                    <strong style={{ color: 'var(--text-primary)' }}>92.4% (Calibrated)</strong>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px', background: 'var(--bg-card)', borderRadius: '2px' }}>
-                    <span style={{ color: 'var(--text-secondary)' }}>Workflow Status</span>
-                    <strong style={{ color: 'var(--threat-l3)' }}>HITL Review Required</strong>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px', background: 'var(--bg-card)', borderRadius: '2px' }}>
-                    <span style={{ color: 'var(--text-secondary)' }}>Authorization Status</span>
-                    <strong style={{ color: 'var(--threat-l3)' }}>Pending Commander Sign-off</strong>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px', background: 'var(--bg-card)', borderRadius: '2px' }}>
-                    <span style={{ color: 'var(--text-secondary)' }}>Communication Status</span>
-                    <strong style={{ color: 'var(--text-muted)' }}>Held for Approval</strong>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+      case 'fusion':
+        return (
+          <SensorFusionView
+            incidentId={selectedIncidentId}
+            onNavigate={(page) => setCurrentPage(page)}
+          />
         );
 
       case 'authorization_queue':
