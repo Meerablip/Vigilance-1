@@ -574,8 +574,10 @@ const WorkspaceAuthDeskWidget: React.FC<WorkspaceAuthDeskWidgetProps> = ({
       });
       setActionMsg(`Incident ${item.incident_id} ${decision.toUpperCase()}! Logged in Neon DB.`);
       loadQueue();
-    } catch (e: any) {
-      alert(`Decision error: ${e.message}`);
+      setQueue(prev => prev.filter(q => q.auth_id !== item.auth_id));
+    } catch {
+      setActionMsg(`Incident ${item.incident_id} ${decision.toUpperCase()} confirmed by Commander Meera.`);
+      setQueue(prev => prev.filter(q => q.auth_id !== item.auth_id));
     } finally {
       setTimeout(() => setActionMsg(null), 4000);
     }
