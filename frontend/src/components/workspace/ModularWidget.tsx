@@ -14,7 +14,8 @@ import type { WidgetConfig } from '../../types';
 interface ModularWidgetProps {
   widget: WidgetConfig;
   gridSize: number; // e.g. 24px
-  canvasBounds: { width: number; height: number };
+  canvasBounds?: { width: number; height: number };
+  zoom?: number;
   isLocked: boolean;
   onUpdate: (updated: Partial<WidgetConfig>) => void;
   onRemove: (id: string) => void;
@@ -27,7 +28,7 @@ interface ModularWidgetProps {
 export const ModularWidget: React.FC<ModularWidgetProps> = ({
   widget,
   gridSize = 24,
-  canvasBounds,
+  zoom = 1,
   isLocked,
   onUpdate,
   onRemove,
@@ -75,20 +76,19 @@ export const ModularWidget: React.FC<ModularWidgetProps> = ({
   };
 
   const handleWindowMouseMove = (e: MouseEvent) => {
+    const scale = Math.max(0.2, zoom);
     if (isDragging.current) {
-      const deltaX = Math.round((e.clientX - dragStartPos.current.x) / gridSize);
-      const deltaY = Math.round((e.clientY - dragStartPos.current.y) / gridSize);
+      const deltaX = Math.round((e.clientX - dragStartPos.current.x) / (gridSize * scale));
+      const deltaY = Math.round((e.clientY - dragStartPos.current.y) / (gridSize * scale));
 
-      const maxGridX = Math.floor(canvasBounds.width / gridSize) - widget.w;
-      const maxGridY = Math.floor(canvasBounds.height / gridSize) - (widget.isMinimized ? 2 : widget.h);
-
-      const newX = Math.max(0, Math.min(maxGridX, initialWidgetPos.current.x + deltaX));
-      const newY = Math.max(0, Math.min(maxGridY, initialWidgetPos.current.y + deltaY));
+      // Endless canvas: allow dragging anywhere downwards or rightwards without upper boundary cap!
+      const newX = Math.max(0, initialWidgetPos.current.x + deltaX);
+      const newY = Math.max(0, initialWidgetPos.current.y + deltaY);
 
       onUpdate({ x: newX, y: newY });
     } else if (isResizing.current) {
-      const deltaGridX = Math.round((e.clientX - resizeStartPos.current.x) / gridSize);
-      const deltaGridY = Math.round((e.clientY - resizeStartPos.current.y) / gridSize);
+      const deltaGridX = Math.round((e.clientX - resizeStartPos.current.x) / (gridSize * scale));
+      const deltaGridY = Math.round((e.clientY - resizeStartPos.current.y) / (gridSize * scale));
 
       const dir = resizeDirection.current;
       let newX = initialWidgetBounds.current.x;
@@ -179,10 +179,27 @@ export const ModularWidget: React.FC<ModularWidgetProps> = ({
       <div 
         className="panel-header"
         onMouseDown={handleHeaderMouseDown}
+        onDoubleClick={() => onUpdate({ isMinimized: !isMin })}
+        style={{ cursor: isMin ? 'pointer' : 'default' }}
       >
         <div className="panel-title-area">
           <Move size={12} color="var(--text-muted)" style={{ cursor: 'grab' }} />
           <span>{widget.title}</span>
+          {isMin && (
+            <span style={{
+              fontSize: '8px',
+              fontFamily: 'monospace',
+              fontWeight: 700,
+              background: 'rgba(56, 189, 248, 0.15)',
+              color: '#38bdf8',
+              border: '1px solid rgba(56, 189, 248, 0.3)',
+              padding: '1px 5px',
+              borderRadius: '2px',
+              marginLeft: '6px'
+            }}>
+              MINIMIZED (DOUBLE CLICK TO RESTORE)
+            </span>
+          )}
         </div>
 
         <div className="panel-actions">
@@ -195,7 +212,7 @@ export const ModularWidget: React.FC<ModularWidgetProps> = ({
             }}
             title={isMin ? 'Expand Panel' : 'Minimize Panel'}
           >
-            <Minus size={13} />
+            {isMin ? <Maximize2 size={11} color="#38bdf8" /> : <Minus size={13} />}
           </button>
 
           {/* Maximize / Restore */}
