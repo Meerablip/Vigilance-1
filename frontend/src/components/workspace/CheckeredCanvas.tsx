@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ModularWidget } from './ModularWidget';
 import { WidgetLibrary } from './WidgetLibrary';
 import { LayoutToolbar } from './LayoutToolbar';
@@ -239,22 +239,54 @@ export const CheckeredCanvas: React.FC<CheckeredCanvasProps> = ({
     };
   }, []);
 
-  // Mouse Wheel: Vertical scrolling down / up + Shift for horizontal, or Ctrl for Zoom
-  const handleWheel = useCallback((e: React.WheelEvent) => {
-    if (e.ctrlKey) {
-      // Zoom centered on cursor
-      e.preventDefault();
-      const zoomFactor = e.deltaY < 0 ? 1.08 : 0.92;
-      setZoom(prevZoom => Math.max(0.4, Math.min(1.6, prevZoom * zoomFactor)));
-    } else {
-      // Native-feeling vertical scroll down / up (or Shift + Wheel for horizontal)
-      const deltaY = e.deltaY;
-      const deltaX = e.deltaX;
-      setPanOffset(prev => ({
-        x: prev.x - (e.shiftKey ? deltaY : deltaX),
-        y: prev.y - (e.shiftKey ? 0 : deltaY)
-      }));
-    }
+  // Dedicated Wheel Listener: ONLY zoom or pan when the event occurs on blank canvas space.
+  // When interacting with ANY module, the canvas stays completely stationary.
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const handleNativeWheel = (e: WheelEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+
+      // Strict isolation: if wheel occurs over any modular panel, widget pill,
+      // radar minimap, library drawer, or toolbar, do NOT affect the modular canvas!
+      const isOverModule = Boolean(
+        target.closest('.modular-panel') ||
+        target.closest('.modular-widget-pill') ||
+        target.closest('.canvas-radar-minimap') ||
+        target.closest('.layout-toolbar') ||
+        target.closest('.widget-library-drawer') ||
+        target.closest('.widget-action-btn')
+      );
+
+      if (isOverModule) {
+        // Module receives 100% independent scroll/zoom without canvas movement
+        return;
+      }
+
+      // Wheel occurred on blank canvas space:
+      if (e.ctrlKey) {
+        // Zoom centered on cursor on blank space
+        e.preventDefault();
+        const zoomFactor = e.deltaY < 0 ? 1.08 : 0.92;
+        setZoom(prevZoom => Math.max(0.4, Math.min(1.6, prevZoom * zoomFactor)));
+      } else {
+        // Smooth panning across virtual canvas on blank space
+        e.preventDefault();
+        const deltaY = e.deltaY;
+        const deltaX = e.deltaX;
+        setPanOffset(prev => ({
+          x: prev.x - (e.shiftKey ? deltaY : deltaX),
+          y: prev.y - (e.shiftKey ? 0 : deltaY)
+        }));
+      }
+    };
+
+    container.addEventListener('wheel', handleNativeWheel, { passive: false });
+    return () => {
+      container.removeEventListener('wheel', handleNativeWheel);
+    };
   }, []);
 
   // Panning handlers (middle click, spacebar + left click, or drag on empty canvas background)
@@ -481,7 +513,6 @@ export const CheckeredCanvas: React.FC<CheckeredCanvasProps> = ({
           backgroundSize: `${GRID_SIZE * 5 * zoom}px ${GRID_SIZE * 5 * zoom}px, ${GRID_SIZE * 5 * zoom}px ${GRID_SIZE * 5 * zoom}px, ${GRID_SIZE * zoom}px ${GRID_SIZE * zoom}px, ${GRID_SIZE * zoom}px ${GRID_SIZE * zoom}px`,
           outline: isDragOver ? '2px dashed var(--military-green-border-focus)' : 'none'
         }}
-        onWheel={handleWheel}
         onMouseDown={handleMouseDown}
         onContextMenu={(e) => {
           // If right-clicked on empty background, prevent default context menu to allow panning
@@ -508,7 +539,7 @@ export const CheckeredCanvas: React.FC<CheckeredCanvasProps> = ({
           }}
         >
           {widgets.map((widget) => (
-            <div key={widget.id} style={{ pointerEvents: 'auto' }}>
+            <div key={widget.id} style={{ pointerEvents: 'auto' }} onWheel={(e) => e.stopPropagation()}>
               <ModularWidget
                 widget={widget}
                 gridSize={GRID_SIZE}

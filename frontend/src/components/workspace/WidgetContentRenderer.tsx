@@ -39,7 +39,10 @@ export const WidgetContentRenderer: React.FC<WidgetContentRendererProps> = ({
   switch (widget.type) {
     case 'regional_map':
       return (
-        <div style={{ height: '100%', width: '100%', position: 'relative' }}>
+        <div 
+          style={{ height: '100%', width: '100%', position: 'relative' }}
+          onWheel={(e) => e.stopPropagation()}
+        >
           <PrecisionIndiaMap
             compact={true}
             onExpand={() => onNavigate('map')}

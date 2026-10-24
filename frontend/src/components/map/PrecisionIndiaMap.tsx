@@ -708,15 +708,18 @@ export const PrecisionIndiaMap: React.FC<PrecisionIndiaMapProps> = ({
   };
 
   return (
-    <div style={{
-      position: 'relative',
-      width: '100%',
-      height: '100%',
-      backgroundColor: '#0c0f17',
-      overflow: 'hidden',
-      fontFamily: 'var(--font-mono, monospace)',
-      userSelect: 'none'
-    }}>
+    <div 
+      style={{
+        position: 'relative',
+        width: '100%',
+        height: '100%',
+        backgroundColor: '#0c0f17',
+        overflow: 'hidden',
+        fontFamily: 'var(--font-mono, monospace)',
+        userSelect: 'none'
+      }}
+      onWheel={(e) => e.stopPropagation()}
+    >
       {/* 1. Underlying Google Maps Viewport (Place-Accurate) */}
       <div
         ref={mapContainerRef}
@@ -728,6 +731,7 @@ export const PrecisionIndiaMap: React.FC<PrecisionIndiaMapProps> = ({
           left: 0,
           zIndex: 1
         }}
+        onWheel={(e) => e.stopPropagation()}
       />
 
       {/* 2. Tactical Canvas Overlay (Fixed Range Rings & Track Vectors) */}
@@ -815,10 +819,52 @@ export const PrecisionIndiaMap: React.FC<PrecisionIndiaMapProps> = ({
             })}
           </div>
 
-          <span style={{ color: '#475569', fontSize: '10px' }}>|</span>
-
-          <div style={{ fontSize: '10px', color: '#94a3b8' }}>
-            ZOOM {mapZoom}x
+          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <span style={{ fontSize: '10px', color: 'var(--military-green-text, #84b699)', fontWeight: 600 }}>
+              ZOOM {mapZoom}x
+            </span>
+            <button
+              onClick={() => mapRef.current?.zoomIn()}
+              title="Zoom In Map (+)"
+              style={{
+                background: 'rgba(24, 44, 32, 0.85)',
+                border: '1px solid var(--military-green-border, #274734)',
+                color: '#f8fafc',
+                width: '18px',
+                height: '18px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '2px',
+                cursor: 'pointer',
+                fontSize: '12px',
+                fontWeight: 700,
+                lineHeight: 1
+              }}
+            >
+              +
+            </button>
+            <button
+              onClick={() => mapRef.current?.zoomOut()}
+              title="Zoom Out Map (-)"
+              style={{
+                background: 'rgba(24, 44, 32, 0.85)',
+                border: '1px solid var(--military-green-border, #274734)',
+                color: '#f8fafc',
+                width: '18px',
+                height: '18px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '2px',
+                cursor: 'pointer',
+                fontSize: '12px',
+                fontWeight: 700,
+                lineHeight: 1
+              }}
+            >
+              -
+            </button>
           </div>
 
           {onExpand && (

@@ -148,6 +148,21 @@ export const ModularWidget: React.FC<ModularWidgetProps> = ({
     return () => window.removeEventListener('mousedown', handleOutsideClick);
   }, [contextMenuPos]);
 
+  // Isolate module wheel events so internal scrolling or map zooming never affects the modular canvas
+  useEffect(() => {
+    const el = panelRef.current;
+    if (!el) return;
+
+    const stopWheelBubble = (e: WheelEvent) => {
+      e.stopPropagation();
+    };
+
+    el.addEventListener('wheel', stopWheelBubble, { passive: true });
+    return () => {
+      el.removeEventListener('wheel', stopWheelBubble);
+    };
+  }, []);
+
   // Compute CSS placement
   const isMax = widget.isMaximized;
   const isMin = widget.isMinimized;
@@ -174,6 +189,7 @@ export const ModularWidget: React.FC<ModularWidgetProps> = ({
       style={panelStyle}
       onClick={() => onFocus(widget.id)}
       onContextMenu={handleContextMenu}
+      onWheel={(e) => e.stopPropagation()}
     >
       {/* Header */}
       <div 
