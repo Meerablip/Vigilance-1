@@ -552,7 +552,7 @@ export const AuthorizationQueueDesk: React.FC<AuthorizationQueueDeskProps> = ({
                       fontWeight: 600
                     }}
                   >
-                    ⚡ {preset.split(';')[0].slice(0, 26)}...
+                    {preset.split(';')[0].slice(0, 26)}...
                   </button>
                 ))}
               </div>

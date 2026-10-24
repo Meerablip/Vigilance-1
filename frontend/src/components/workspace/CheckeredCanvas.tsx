@@ -581,7 +581,7 @@ export const CheckeredCanvas: React.FC<CheckeredCanvasProps> = ({
             pointerEvents: 'none'
           }}
         >
-          {widgets.map((widget) => (
+          {widgets.filter(w => !w.isMaximized).map((widget) => (
             <div key={widget.id} style={{ display: 'contents', pointerEvents: 'auto' }}>
               <ModularWidget
                 widget={widget}
@@ -603,6 +603,44 @@ export const CheckeredCanvas: React.FC<CheckeredCanvasProps> = ({
             </div>
           ))}
         </div>
+
+        {/* Fullscreen Expanded Module Viewport (Rendered OUTSIDE virtual layer to eliminate transform clipping) */}
+        {widgets.find(w => w.isMaximized) && (() => {
+          const maxWidget = widgets.find(w => w.isMaximized)!;
+          return (
+            <div
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                zIndex: 600,
+                background: 'var(--bg-canvas, #08090b)',
+                display: 'flex',
+                flexDirection: 'column'
+              }}
+            >
+              <ModularWidget
+                widget={maxWidget}
+                gridSize={GRID_SIZE}
+                zoom={1}
+                isLocked={true}
+                onUpdate={(updated) => handleUpdateWidget(maxWidget.id, updated)}
+                onRemove={handleRemoveWidget}
+                onDuplicate={handleDuplicateWidget}
+                onFocus={() => {}}
+                isFocused={true}
+              >
+                <WidgetContentRenderer 
+                  widget={maxWidget} 
+                  onNavigate={onNavigate}
+                  onSelectIncident={onSelectIncident}
+                />
+              </ModularWidget>
+            </div>
+          );
+        })()}
 
         {/* Empty Canvas Quick Deploy Overlay */}
         {widgets.length === 0 && (
@@ -885,7 +923,7 @@ export const CheckeredCanvas: React.FC<CheckeredCanvasProps> = ({
                     <ZoomOut size={9} />
                   </button>
                   <span style={{ fontFamily: 'monospace', color: isZoomLocked ? '#38bdf8' : 'var(--military-green-text)' }}>
-                    {Math.round(zoom * 100)}%{isZoomLocked ? ' 🔒' : ''}
+                    {Math.round(zoom * 100)}%{isZoomLocked ? ' [LOCKED]' : ''}
                   </span>
                   <button
                     disabled={isZoomLocked}

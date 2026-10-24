@@ -209,64 +209,69 @@ html, body {
   background: var(--bg-card);
 }
 
-/* Border Resizing Handles */
+/* Border Resizing Handles - Generous hit areas for seamless expansion */
 .resize-edge {
   position: absolute;
-  z-index: 25;
+  z-index: 40;
 }
 .resize-edge-n {
-  top: -4px;
-  left: 10px;
-  right: 10px;
-  height: 9px;
+  top: -6px;
+  left: 14px;
+  right: 14px;
+  height: 12px;
   cursor: ns-resize;
 }
 .resize-edge-s {
-  bottom: -4px;
-  left: 10px;
-  right: 10px;
-  height: 9px;
+  bottom: -6px;
+  left: 14px;
+  right: 14px;
+  height: 12px;
   cursor: ns-resize;
 }
 .resize-edge-w {
-  left: -4px;
-  top: 10px;
-  bottom: 10px;
-  width: 9px;
+  left: -6px;
+  top: 14px;
+  bottom: 14px;
+  width: 12px;
   cursor: ew-resize;
 }
 .resize-edge-e {
-  right: -4px;
-  top: 10px;
-  bottom: 10px;
-  width: 9px;
+  right: -6px;
+  top: 14px;
+  bottom: 14px;
+  width: 12px;
   cursor: ew-resize;
 }
 .resize-corner {
   position: absolute;
-  width: 14px;
-  height: 14px;
-  z-index: 26;
+  width: 18px;
+  height: 18px;
+  z-index: 45;
 }
 .resize-corner-nw {
-  top: -4px;
-  left: -4px;
+  top: -6px;
+  left: -6px;
   cursor: nwse-resize;
 }
 .resize-corner-ne {
-  top: -4px;
-  right: -4px;
+  top: -6px;
+  right: -6px;
   cursor: nesw-resize;
 }
 .resize-corner-sw {
-  bottom: -4px;
-  left: -4px;
+  bottom: -6px;
+  left: -6px;
   cursor: nesw-resize;
 }
 .resize-corner-se {
   bottom: -4px;
   right: -4px;
   cursor: nwse-resize;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
 }
 
 /* Threat Badges - Minimalist, Muted */

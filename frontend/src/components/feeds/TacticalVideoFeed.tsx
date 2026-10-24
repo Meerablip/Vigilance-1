@@ -14,7 +14,8 @@ import {
   Volume2,
   VolumeX,
   ShieldAlert,
-  ArrowRight
+  ArrowRight,
+  X
 } from 'lucide-react';
 
 export type ThermalPalette = 'EO' | 'White-Hot' | 'Black-Hot' | 'Ironbow' | 'NVG Green';
@@ -928,9 +929,10 @@ export const TacticalVideoFeed: React.FC<TacticalVideoFeedProps> = ({
               </div>
               <button
                 onClick={() => setTriggerIncidentData(null)}
-                style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', padding: 0 }}
+                style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center' }}
+                title="Dismiss"
               >
-                ✕
+                <X size={12} />
               </button>
             </div>
             <div style={{ fontSize: '10px', color: '#cbd5e1', lineHeight: 1.4, marginBottom: '8px' }}>

@@ -696,7 +696,7 @@ const WorkspaceAuthDeskWidget: React.FC<WorkspaceAuthDeskWidgetProps> = ({
                     cursor: 'pointer'
                   }}
                 >
-                  {item.threat_level === 'L5' ? 'Dual Sign-off ➔' : 'Approve Dispatch'}
+                  {item.threat_level === 'L5' ? 'Dual Sign-off ->' : 'Approve Dispatch'}
                 </button>
                 <button
                   onClick={() => handleQuickDecision(item, 'escalated')}
@@ -849,7 +849,7 @@ const WorkspaceConnectedSystemsWidget: React.FC<WorkspaceConnectedSystemsWidgetP
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Send size={10} color="var(--military-green-text)" />
               <span style={{ fontFamily: 'monospace', color: 'var(--military-green-highlight)' }}>{msg.id}</span>
-              <span style={{ color: 'var(--text-muted)' }}>➔ {msg.incident_id}</span>
+              <span style={{ color: 'var(--text-muted)' }}>-&gt; {msg.incident_id}</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               <span style={{ background: 'var(--military-green-surface)', color: 'var(--military-green-highlight)', border: '1px solid var(--military-green-border)', padding: '1px 5px', borderRadius: '1px', fontWeight: 700, fontSize: '8px' }}>

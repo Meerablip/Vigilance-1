@@ -24,7 +24,8 @@ import {
   Navigation,
   Globe,
   Map as MapIcon,
-  Mountain
+  Mountain,
+  X
 } from 'lucide-react';
 
 interface PrecisionIndiaMapProps {
@@ -1284,9 +1285,10 @@ export const PrecisionIndiaMap: React.FC<PrecisionIndiaMapProps> = ({
                 </div>
                 <button
                   onClick={() => setSelectedTrack(null)}
-                  style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '11px' }}
+                  style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }}
+                  title="Close Details"
                 >
-                  ✕
+                  <X size={12} />
                 </button>
               </div>
 
@@ -1325,9 +1327,10 @@ export const PrecisionIndiaMap: React.FC<PrecisionIndiaMapProps> = ({
                 </div>
                 <button
                   onClick={() => setSelectedIncident(null)}
-                  style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '11px' }}
+                  style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }}
+                  title="Close Details"
                 >
-                  ✕
+                  <X size={12} />
                 </button>
               </div>
 
@@ -1359,9 +1362,10 @@ export const PrecisionIndiaMap: React.FC<PrecisionIndiaMapProps> = ({
                 </div>
                 <button
                   onClick={() => setSelectedStation(null)}
-                  style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '11px' }}
+                  style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }}
+                  title="Close Details"
                 >
-                  ✕
+                  <X size={12} />
                 </button>
               </div>
 
@@ -1389,9 +1393,10 @@ export const PrecisionIndiaMap: React.FC<PrecisionIndiaMapProps> = ({
                 </div>
                 <button
                   onClick={() => setSelectedSensor(null)}
-                  style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '11px' }}
+                  style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }}
+                  title="Close Details"
                 >
-                  ✕
+                  <X size={12} />
                 </button>
               </div>
 

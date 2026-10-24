@@ -95,7 +95,7 @@ export const TopBar: React.FC<TopBarProps> = ({
       userSelect: 'none',
       zIndex: 100
     }}>
-      {/* Left: Bold Huge V Logo (No text as requested) */}
+      {/* Left: Tactical V Logo without background */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
         <button 
           onClick={() => onNavigate('workspace')}
@@ -111,28 +111,17 @@ export const TopBar: React.FC<TopBarProps> = ({
           }}
           title="Return to Workspace"
         >
-          {/* Bold Huge V Logo */}
-          <div style={{
-            width: '32px',
-            height: '32px',
-            background: 'var(--bg-card)',
-            border: '1px solid var(--military-green-border)',
-            borderRadius: '3px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-            <span style={{
-              fontFamily: "'Impact', 'Arial Black', -apple-system, sans-serif",
-              fontSize: '22px',
-              fontWeight: 900,
-              color: 'var(--military-green-highlight)',
-              lineHeight: 1,
-              letterSpacing: '-1px'
-            }}>
-              V
-            </span>
-          </div>
+          <img 
+            src="/logo-v-transparent.png" 
+            alt="Vigilance Logo" 
+            style={{ 
+              height: '28px', 
+              width: 'auto',
+              maxHeight: '28px',
+              objectFit: 'contain',
+              display: 'block'
+            }} 
+          />
         </button>
 
         {/* Active Highest Threat Indicator (Minimalist & Subdued) */}

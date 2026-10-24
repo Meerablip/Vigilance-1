@@ -205,7 +205,7 @@ export const LayoutToolbar: React.FC<LayoutToolbarProps> = ({
           title="Save layout configuration to persistent memory"
         >
           {saveFeedback ? <Check size={11} color="var(--status-healthy)" /> : <Save size={11} />}
-          <span>{saveFeedback ? 'Saved ✓' : 'Save'}</span>
+          <span>{saveFeedback ? 'Saved' : 'Save'}</span>
         </button>
 
         {/* Reset Layout Button */}
@@ -227,7 +227,7 @@ export const LayoutToolbar: React.FC<LayoutToolbarProps> = ({
           title="Reset to default multi-module layout"
         >
           <RotateCcw size={11} />
-          <span>{resetFeedback ? 'Reset ✓' : 'Reset'}</span>
+          <span>{resetFeedback ? 'Reset' : 'Reset'}</span>
         </button>
       </div>
 

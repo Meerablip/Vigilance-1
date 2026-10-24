@@ -51,46 +51,61 @@ export const ModularWidget: React.FC<ModularWidgetProps> = ({
   const resizeStartPos = useRef({ x: 0, y: 0 });
   const initialWidgetBounds = useRef({ x: widget.x, y: widget.y, w: widget.w, h: widget.h });
 
-  // Handle Dragging
-  const handleHeaderMouseDown = (e: React.MouseEvent) => {
+  // Handle Dragging via Pointer Events (Capture pointer so events are never lost)
+  const handleHeaderPointerDown = (e: React.PointerEvent) => {
     if (isLocked || widget.isMaximized || (e.target as HTMLElement).closest('.panel-btn')) return;
     e.preventDefault();
     onFocus(widget.id);
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+
     isDragging.current = true;
     dragStartPos.current = { x: e.clientX, y: e.clientY };
     initialWidgetPos.current = { x: widget.x, y: widget.y };
-    window.addEventListener('mousemove', handleWindowMouseMove);
-    window.addEventListener('mouseup', handleWindowMouseUp);
-  };
 
-  // Handle Resizing
-  const handleResizeStart = (e: React.MouseEvent, direction: string) => {
-    if (isLocked || widget.isMaximized) return;
-    e.preventDefault();
-    e.stopPropagation();
-    onFocus(widget.id);
-    isResizing.current = true;
-    resizeDirection.current = direction;
-    resizeStartPos.current = { x: e.clientX, y: e.clientY };
-    initialWidgetBounds.current = { x: widget.x, y: widget.y, w: widget.w, h: widget.h };
-    window.addEventListener('mousemove', handleWindowMouseMove);
-    window.addEventListener('mouseup', handleWindowMouseUp);
-  };
+    const handlePointerMove = (moveEvent: PointerEvent) => {
+      if (!isDragging.current) return;
+      const scale = Math.max(0.2, zoom);
+      const deltaX = Math.round((moveEvent.clientX - dragStartPos.current.x) / (gridSize * scale));
+      const deltaY = Math.round((moveEvent.clientY - dragStartPos.current.y) / (gridSize * scale));
 
-  const handleWindowMouseMove = (e: MouseEvent) => {
-    const scale = Math.max(0.2, zoom);
-    if (isDragging.current) {
-      const deltaX = Math.round((e.clientX - dragStartPos.current.x) / (gridSize * scale));
-      const deltaY = Math.round((e.clientY - dragStartPos.current.y) / (gridSize * scale));
-
-      // Endless canvas: allow dragging anywhere downwards or rightwards without upper boundary cap!
+      // Endless canvas: allow moving anywhere
       const newX = Math.max(0, initialWidgetPos.current.x + deltaX);
       const newY = Math.max(0, initialWidgetPos.current.y + deltaY);
 
       onUpdate({ x: newX, y: newY });
-    } else if (isResizing.current) {
-      const deltaGridX = Math.round((e.clientX - resizeStartPos.current.x) / (gridSize * scale));
-      const deltaGridY = Math.round((e.clientY - resizeStartPos.current.y) / (gridSize * scale));
+    };
+
+    const handlePointerUp = (upEvent: PointerEvent) => {
+      isDragging.current = false;
+      try {
+        (upEvent.target as HTMLElement).releasePointerCapture(upEvent.pointerId);
+      } catch (_) {}
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+    };
+
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
+  };
+
+  // Handle Resizing via Pointer Events (Smooth real-time expansion with pointer capture)
+  const handleResizePointerDown = (e: React.PointerEvent, direction: string) => {
+    if (isLocked || widget.isMaximized) return;
+    e.preventDefault();
+    e.stopPropagation();
+    onFocus(widget.id);
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+
+    isResizing.current = true;
+    resizeDirection.current = direction;
+    resizeStartPos.current = { x: e.clientX, y: e.clientY };
+    initialWidgetBounds.current = { x: widget.x, y: widget.y, w: widget.w, h: widget.h };
+
+    const handlePointerMove = (moveEvent: PointerEvent) => {
+      if (!isResizing.current) return;
+      const scale = Math.max(0.2, zoom);
+      const deltaGridX = Math.round((moveEvent.clientX - resizeStartPos.current.x) / (gridSize * scale));
+      const deltaGridY = Math.round((moveEvent.clientY - resizeStartPos.current.y) / (gridSize * scale));
 
       const dir = resizeDirection.current;
       let newX = initialWidgetBounds.current.x;
@@ -123,15 +138,32 @@ export const ModularWidget: React.FC<ModularWidgetProps> = ({
       }
 
       onUpdate({ x: newX, y: newY, w: newW, h: newH });
-    }
+    };
+
+    const handlePointerUp = (upEvent: PointerEvent) => {
+      isResizing.current = false;
+      try {
+        (upEvent.target as HTMLElement).releasePointerCapture(upEvent.pointerId);
+      } catch (_) {}
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+    };
+
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
   };
 
-  const handleWindowMouseUp = () => {
-    isDragging.current = false;
-    isResizing.current = false;
-    window.removeEventListener('mousemove', handleWindowMouseMove);
-    window.removeEventListener('mouseup', handleWindowMouseUp);
-  };
+  // Escape key handler to quickly restore from fullscreen
+  useEffect(() => {
+    if (!widget.isMaximized) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onUpdate({ isMaximized: false });
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [widget.isMaximized, onUpdate]);
 
   // Right-click context menu
   const handleContextMenu = (e: React.MouseEvent) => {
@@ -170,14 +202,15 @@ export const ModularWidget: React.FC<ModularWidgetProps> = ({
   const isMin = widget.isMinimized;
 
   const panelStyle: React.CSSProperties = isMax ? {
-    position: 'fixed',
-    top: '46px',
-    left: '52px',
-    right: '12px',
-    bottom: '24px',
-    width: 'auto',
-    height: 'auto',
-    zIndex: 1000
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    zIndex: 1000,
+    borderRadius: 0,
+    border: 'none',
+    boxShadow: 'none'
   } : {
     position: 'absolute',
     left: `${widget.x * gridSize}px`,
@@ -199,13 +232,34 @@ export const ModularWidget: React.FC<ModularWidgetProps> = ({
       {/* Header */}
       <div 
         className="panel-header"
-        onMouseDown={handleHeaderMouseDown}
-        onDoubleClick={() => onUpdate({ isMinimized: !isMin })}
-        style={{ cursor: isMin ? 'pointer' : 'default' }}
+        onPointerDown={handleHeaderPointerDown}
+        onDoubleClick={() => {
+          if (isMin) {
+            onUpdate({ isMinimized: false });
+          } else {
+            onUpdate({ isMaximized: !isMax });
+          }
+        }}
+        style={{ cursor: isMin ? 'pointer' : isMax ? 'default' : 'grab' }}
       >
         <div className="panel-title-area">
-          <Move size={12} color="var(--text-muted)" style={{ cursor: 'grab' }} />
+          {!isMax && <Move size={12} color="var(--text-muted)" style={{ cursor: 'grab' }} />}
           <span>{widget.title}</span>
+          {isMax && (
+            <span style={{
+              fontSize: '9px',
+              fontFamily: 'monospace',
+              fontWeight: 700,
+              background: 'rgba(56, 189, 248, 0.15)',
+              color: '#38bdf8',
+              border: '1px solid rgba(56, 189, 248, 0.3)',
+              padding: '1px 6px',
+              borderRadius: '2px',
+              marginLeft: '6px'
+            }}>
+              FULLSCREEN EXPANDED (ESC TO RESTORE)
+            </span>
+          )}
           {isMin && (
             <span style={{
               fontSize: '8px',
@@ -224,17 +278,19 @@ export const ModularWidget: React.FC<ModularWidgetProps> = ({
         </div>
 
         <div className="panel-actions">
-          {/* Minimize / Expand */}
-          <button
-            className="panel-btn"
-            onClick={(e) => {
-              e.stopPropagation();
-              onUpdate({ isMinimized: !isMin });
-            }}
-            title={isMin ? 'Expand Panel' : 'Minimize Panel'}
-          >
-            {isMin ? <Maximize2 size={11} color="#38bdf8" /> : <Minus size={13} />}
-          </button>
+          {/* Minimize / Expand (hidden in fullscreen) */}
+          {!isMax && (
+            <button
+              className="panel-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                onUpdate({ isMinimized: !isMin });
+              }}
+              title={isMin ? 'Expand Panel' : 'Minimize Panel'}
+            >
+              {isMin ? <Maximize2 size={11} color="#38bdf8" /> : <Minus size={13} />}
+            </button>
+          )}
 
           {/* Maximize / Restore */}
           <button
@@ -243,23 +299,25 @@ export const ModularWidget: React.FC<ModularWidgetProps> = ({
               e.stopPropagation();
               onUpdate({ isMaximized: !isMax });
             }}
-            title={isMax ? 'Restore Size' : 'Maximize to Full Workspace'}
+            title={isMax ? 'Restore Size (Escape)' : 'Maximize to Full Workspace'}
           >
-            {isMax ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
+            {isMax ? <Minimize2 size={13} color="#38bdf8" /> : <Maximize2 size={13} />}
           </button>
 
           {/* 3-Dot Contextual Menu */}
-          <button
-            className="panel-btn"
-            onClick={(e) => {
-              e.stopPropagation();
-              const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-              setContextMenuPos({ x: rect.right - 140, y: rect.bottom + 4 });
-            }}
-            title="Panel Options"
-          >
-            <MoreVertical size={13} />
-          </button>
+          {!isMax && (
+            <button
+              className="panel-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                setContextMenuPos({ x: rect.right - 140, y: rect.bottom + 4 });
+              }}
+              title="Panel Options"
+            >
+              <MoreVertical size={13} />
+            </button>
+          )}
 
           {/* Quick Close 'X' Button */}
           <button
@@ -277,7 +335,7 @@ export const ModularWidget: React.FC<ModularWidgetProps> = ({
 
       {/* Body Content (hidden when minimized) */}
       {!isMin && (
-        <div className="panel-body">
+        <div className="panel-body" style={{ height: isMax ? 'calc(100% - 32px)' : undefined }}>
           {children}
         </div>
       )}
@@ -285,15 +343,27 @@ export const ModularWidget: React.FC<ModularWidgetProps> = ({
       {/* Border & Corner Resizing Grips (active when not locked and not maximized/minimized) */}
       {!isLocked && !isMax && !isMin && (
         <>
-          <div className="resize-edge resize-edge-n" onMouseDown={(e) => handleResizeStart(e, 'n')} />
-          <div className="resize-edge resize-edge-s" onMouseDown={(e) => handleResizeStart(e, 's')} />
-          <div className="resize-edge resize-edge-w" onMouseDown={(e) => handleResizeStart(e, 'w')} />
-          <div className="resize-edge resize-edge-e" onMouseDown={(e) => handleResizeStart(e, 'e')} />
+          <div className="resize-edge resize-edge-n" onPointerDown={(e) => handleResizePointerDown(e, 'n')} />
+          <div className="resize-edge resize-edge-s" onPointerDown={(e) => handleResizePointerDown(e, 's')} />
+          <div className="resize-edge resize-edge-w" onPointerDown={(e) => handleResizePointerDown(e, 'w')} />
+          <div className="resize-edge resize-edge-e" onPointerDown={(e) => handleResizePointerDown(e, 'e')} />
 
-          <div className="resize-corner resize-corner-nw" onMouseDown={(e) => handleResizeStart(e, 'nw')} />
-          <div className="resize-corner resize-corner-ne" onMouseDown={(e) => handleResizeStart(e, 'ne')} />
-          <div className="resize-corner resize-corner-sw" onMouseDown={(e) => handleResizeStart(e, 'sw')} />
-          <div className="resize-corner resize-corner-se" onMouseDown={(e) => handleResizeStart(e, 'se')} />
+          <div className="resize-corner resize-corner-nw" onPointerDown={(e) => handleResizePointerDown(e, 'nw')} />
+          <div className="resize-corner resize-corner-ne" onPointerDown={(e) => handleResizePointerDown(e, 'ne')} />
+          <div className="resize-corner resize-corner-sw" onPointerDown={(e) => handleResizePointerDown(e, 'sw')} />
+          
+          {/* Visible Tactical Corner Gripper in Southeast */}
+          <div 
+            className="resize-corner resize-corner-se" 
+            onPointerDown={(e) => handleResizePointerDown(e, 'se')}
+            title="Click and drag to expand or resize module"
+          >
+            <svg width="10" height="10" viewBox="0 0 10 10" style={{ pointerEvents: 'none', marginBottom: '2px', marginRight: '2px', opacity: 0.7 }}>
+              <line x1="8" y1="2" x2="2" y2="8" stroke="var(--military-green-border-focus, #38bdf8)" strokeWidth="1.2" />
+              <line x1="8" y1="5" x2="5" y2="8" stroke="var(--military-green-border-focus, #38bdf8)" strokeWidth="1.2" />
+              <line x1="8" y1="8" x2="8" y2="8" stroke="var(--military-green-border-focus, #38bdf8)" strokeWidth="1.2" />
+            </svg>
+          </div>
         </>
       )}
 
