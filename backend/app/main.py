@@ -7,6 +7,7 @@ from app.models.entities import Location, Sensor, Incident, User, AuditLog
 from app.api.auth import router as auth_router
 from app.api.incidents import router as incidents_router
 from app.api.authorization import router as auth_queue_router
+from app.api.cv_detection import router as cv_router
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -28,6 +29,7 @@ app.add_middleware(
 app.include_router(auth_router, prefix=settings.API_V1_STR)
 app.include_router(incidents_router, prefix=settings.API_V1_STR)
 app.include_router(auth_queue_router, prefix=settings.API_V1_STR)
+app.include_router(cv_router, prefix=settings.API_V1_STR)
 
 @app.get("/api/health")
 def health_check():

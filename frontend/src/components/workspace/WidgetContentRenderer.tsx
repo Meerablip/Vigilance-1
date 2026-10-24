@@ -1,17 +1,14 @@
 import React, { useState } from 'react';
 import { 
-  Play,
-  Pause,
-  Layers,
-  Flame,
-  Compass,
-  Radio,
-  Eye,
+  Flame, 
+  Compass, 
+  Radio, 
   Camera,
-  ClipboardCheck
+  ClipboardCheck 
 } from 'lucide-react';
 import type { WidgetConfig, PageId } from '../../types';
 import { PrecisionIndiaMap } from '../map/PrecisionIndiaMap';
+import { TacticalVideoFeed } from '../feeds/TacticalVideoFeed';
 import { 
   SECTOR_HEATMAP_STATS, 
   SENSOR_COVERAGE_SPECS, 
@@ -31,10 +28,7 @@ export const WidgetContentRenderer: React.FC<WidgetContentRendererProps> = ({
   onNavigate,
   onSelectIncident
 }) => {
-  const [isPlaying, setIsPlaying] = useState(true);
-  const [showAIOverlay, setShowAIOverlay] = useState(true);
   const [heatmapTimeRange, setHeatmapTimeRange] = useState<'1h' | '6h' | '24h' | '7d'>('24h');
-  const [droneMode, setDroneMode] = useState<'EO' | 'IR'>('EO');
   const [activeCoverageTab, setActiveCoverageTab] = useState<'cones' | 'blindspots'>('cones');
 
   switch (widget.type) {
@@ -300,231 +294,28 @@ export const WidgetContentRenderer: React.FC<WidgetContentRendererProps> = ({
     // 3. Live Optical Surveillance Feed
     case 'cctv_feeds':
       return (
-        <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-          <div style={{
-            height: '28px',
-            background: 'var(--bg-surface-elevated)',
-            borderBottom: '1px solid var(--border-subtle)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '0 8px'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '10px' }}>
-              <span className="status-indicator status-indicator-healthy" />
-              <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>CAM-NORTH-04</span>
-              <span style={{ color: 'var(--text-muted)' }}>| VisDrone Tactical Ingest</span>
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <button 
-                onClick={() => setShowAIOverlay(!showAIOverlay)}
-                style={{
-                  background: showAIOverlay ? 'var(--bg-canvas)' : 'transparent',
-                  border: '1px solid var(--border-subtle)',
-                  borderRadius: '2px',
-                  color: showAIOverlay ? 'var(--accent-tactical-active)' : 'var(--text-muted)',
-                  fontSize: '9px',
-                  padding: '2px 6px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px'
-                }}
-              >
-                <Layers size={10} />
-                <span>YOLO Overlay</span>
-              </button>
-
-              <button 
-                onClick={() => setIsPlaying(!isPlaying)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: 'var(--text-secondary)',
-                  cursor: 'pointer',
-                  padding: '2px'
-                }}
-              >
-                {isPlaying ? <Pause size={12} /> : <Play size={12} />}
-              </button>
-            </div>
-          </div>
-
-          <div style={{
-            flex: 1,
-            background: '#04070c',
-            position: 'relative',
-            overflow: 'hidden',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-            <div style={{ width: '100%', height: '100%', position: 'relative' }}>
-              {showAIOverlay && (
-                <>
-                  <div style={{
-                    position: 'absolute',
-                    top: '32%',
-                    left: '42%',
-                    width: '65px',
-                    height: '110px',
-                    border: '1px solid var(--threat-l4)',
-                    pointerEvents: 'none'
-                  }}>
-                    <div style={{
-                      position: 'absolute',
-                      top: '-15px',
-                      left: '-1px',
-                      background: 'var(--bg-surface-elevated)',
-                      border: '1px solid var(--threat-l4)',
-                      color: 'var(--threat-l4)',
-                      fontSize: '8px',
-                      fontFamily: 'monospace',
-                      fontWeight: 700,
-                      padding: '0 3px',
-                      borderRadius: '1px',
-                      whiteSpace: 'nowrap'
-                    }}>
-                      PERSON 0.91
-                    </div>
-                  </div>
-
-                  <div style={{
-                    position: 'absolute',
-                    top: '48%',
-                    left: '58%',
-                    width: '110px',
-                    height: '75px',
-                    border: '1px solid var(--accent-tactical-active)',
-                    pointerEvents: 'none'
-                  }}>
-                    <div style={{
-                      position: 'absolute',
-                      top: '-15px',
-                      left: '-1px',
-                      background: 'var(--bg-surface-elevated)',
-                      border: '1px solid var(--accent-tactical-active)',
-                      color: 'var(--text-primary)',
-                      fontSize: '8px',
-                      fontFamily: 'monospace',
-                      fontWeight: 700,
-                      padding: '0 3px',
-                      borderRadius: '1px',
-                      whiteSpace: 'nowrap'
-                    }}>
-                      TRUCK 0.94
-                    </div>
-                  </div>
-                </>
-              )}
-
-              <div style={{
-                position: 'absolute',
-                bottom: '6px',
-                left: '6px',
-                fontFamily: 'monospace',
-                fontSize: '9px',
-                color: 'var(--text-muted)',
-                background: 'rgba(0, 0, 0, 0.6)',
-                padding: '1px 5px',
-                borderRadius: '1px'
-              }}>
-                YOLO26n-VisDrone • LAT: 14.2ms • FPS: 30
-              </div>
-            </div>
-          </div>
+        <div style={{ height: '100%', width: '100%', position: 'relative' }}>
+          <TacticalVideoFeed 
+            feedId="CAM-NORTH-04" 
+            compact={true} 
+            onTriggerIncident={(id) => {
+              if (onSelectIncident) onSelectIncident(id);
+            }}
+          />
         </div>
       );
 
     // 4. UAV / Aerial Recon Stream Module
     case 'drone_feeds':
       return (
-        <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: '#050810' }}>
-          <div style={{
-            height: '28px',
-            background: 'var(--bg-surface-elevated)',
-            borderBottom: '1px solid var(--border-subtle)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '0 8px',
-            fontSize: '10px'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Eye size={12} color="#10b981" />
-              <strong style={{ color: '#f8fafc' }}>UAV RECON FALCON-02</strong>
-              <span style={{ color: 'var(--text-muted)' }}>ALT 450M • BATT 82%</span>
-            </div>
-
-            <div style={{ display: 'flex', gap: '3px' }}>
-              <button
-                onClick={() => setDroneMode('EO')}
-                style={{
-                  background: droneMode === 'EO' ? '#0284c7' : 'transparent',
-                  border: `1px solid ${droneMode === 'EO' ? '#38bdf8' : '#334155'}`,
-                  color: droneMode === 'EO' ? '#fff' : '#94a3b8',
-                  padding: '1px 5px',
-                  borderRadius: '2px',
-                  fontSize: '8px',
-                  fontWeight: 700,
-                  cursor: 'pointer'
-                }}
-              >
-                EO OPTICAL
-              </button>
-              <button
-                onClick={() => setDroneMode('IR')}
-                style={{
-                  background: droneMode === 'IR' ? '#ea580c' : 'transparent',
-                  border: `1px solid ${droneMode === 'IR' ? '#f97316' : '#334155'}`,
-                  color: droneMode === 'IR' ? '#fff' : '#94a3b8',
-                  padding: '1px 5px',
-                  borderRadius: '2px',
-                  fontSize: '8px',
-                  fontWeight: 700,
-                  cursor: 'pointer'
-                }}
-              >
-                FLIR IR
-              </button>
-            </div>
-          </div>
-
-          <div style={{ flex: 1, position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            {/* Artificial Horizon Lines */}
-            <div style={{ position: 'absolute', width: '120px', height: '1px', background: 'rgba(16, 185, 129, 0.4)', pointerEvents: 'none' }} />
-            <div style={{ position: 'absolute', width: '1px', height: '120px', background: 'rgba(16, 185, 129, 0.4)', pointerEvents: 'none' }} />
-
-            {/* Target Reticle */}
-            <div style={{
-              width: '60px',
-              height: '60px',
-              border: '1.5px dashed #ea580c',
-              borderRadius: '2px',
-              position: 'relative',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <span style={{ fontSize: '8px', color: '#ea580c', fontWeight: 800, position: 'absolute', top: '-14px' }}>
-                LOCK: CONVOY 0.94
-              </span>
-            </div>
-
-            <div style={{
-              position: 'absolute',
-              bottom: '6px',
-              right: '6px',
-              fontSize: '9px',
-              fontFamily: 'monospace',
-              color: '#10b981',
-              background: 'rgba(0,0,0,0.7)',
-              padding: '2px 5px'
-            }}>
-              POS: 34.1450°N 74.7300°E • GIMBAL -28°
-            </div>
-          </div>
+        <div style={{ height: '100%', width: '100%', position: 'relative' }}>
+          <TacticalVideoFeed 
+            feedId="UAV-FALCON-02" 
+            compact={true} 
+            onTriggerIncident={(id) => {
+              if (onSelectIncident) onSelectIncident(id);
+            }}
+          />
         </div>
       );
 

@@ -9,12 +9,16 @@ import { InviteSignupModal } from './components/auth/InviteSignupModal';
 import { apiClient } from './api/client';
 import type { PageId, ThreatLevel } from './types';
 import { PrecisionIndiaMap } from './components/map/PrecisionIndiaMap';
+import { TacticalVideoFeed, TACTICAL_FEEDS } from './components/feeds/TacticalVideoFeed';
 import { 
   ShieldAlert, 
   ClipboardCheck, 
   Activity,
   AlertOctagon,
-  X
+  X,
+  Video,
+  Grid,
+  Maximize2
 } from 'lucide-react';
 
 export const App: React.FC = () => {
@@ -52,6 +56,10 @@ export const App: React.FC = () => {
     message: string;
     threatLevel: ThreatLevel;
   } | null>(null);
+
+  // Live Surveillance Feeds Wall State
+  const [soloFeedId, setSoloFeedId] = useState<string | null>(null);
+  const [feedsViewMode, setFeedsViewMode] = useState<'grid' | 'solo'>('grid');
 
   // On mount: check system status and URL invite token
   useEffect(() => {
@@ -155,6 +163,182 @@ export const App: React.FC = () => {
               onStartSimulation={handleStartSimulation}
               isSimulating={isSimulating}
             />
+          </div>
+        );
+
+      case 'live_feeds':
+        return (
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#090a0d', color: '#e2e8f0', overflow: 'hidden' }}>
+            {/* Header Toolbar */}
+            <div style={{
+              height: '42px',
+              background: '#0d1117',
+              borderBottom: '1px solid #1e2633',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '0 16px',
+              flexShrink: 0
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Video size={16} color="#38bdf8" />
+                <h2 style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '0.04em', margin: 0, textTransform: 'uppercase' }}>
+                  TACTICAL SURVEILLANCE & UAV RECONNAISSANCE WALL
+                </h2>
+                <span style={{
+                  background: 'rgba(56, 189, 248, 0.1)',
+                  border: '1px solid rgba(56, 189, 248, 0.25)',
+                  color: '#38bdf8',
+                  fontSize: '9px',
+                  padding: '2px 6px',
+                  borderRadius: '2px',
+                  fontFamily: 'monospace'
+                }}>
+                  HF MODEL: keremberke/yolov8n-visdrone (CPU AVX-512)
+                </span>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ display: 'flex', background: '#1e293b', borderRadius: '2px', border: '1px solid #334155' }}>
+                  <button
+                    onClick={() => {
+                      setFeedsViewMode('grid');
+                      setSoloFeedId(null);
+                    }}
+                    style={{
+                      background: feedsViewMode === 'grid' ? '#0284c7' : 'transparent',
+                      border: 'none',
+                      color: feedsViewMode === 'grid' ? '#fff' : '#94a3b8',
+                      padding: '4px 8px',
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}
+                  >
+                    <Grid size={12} />
+                    <span>2x2 QUAD GRID</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setFeedsViewMode('solo');
+                      if (!soloFeedId) setSoloFeedId('CAM-NORTH-04');
+                    }}
+                    style={{
+                      background: feedsViewMode === 'solo' ? '#0284c7' : 'transparent',
+                      border: 'none',
+                      color: feedsViewMode === 'solo' ? '#fff' : '#94a3b8',
+                      padding: '4px 8px',
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}
+                  >
+                    <Maximize2 size={12} />
+                    <span>SOLO FOCUS</span>
+                  </button>
+                </div>
+
+                <button
+                  onClick={handleStartSimulation}
+                  disabled={isSimulating}
+                  style={{
+                    background: isSimulating ? '#7f1d1d' : '#dc2626',
+                    border: '1px solid #ef4444',
+                    color: '#fff',
+                    padding: '4px 12px',
+                    borderRadius: '2px',
+                    fontSize: '10px',
+                    fontWeight: 800,
+                    cursor: isSimulating ? 'wait' : 'pointer'
+                  }}
+                >
+                  {isSimulating ? 'INFERENCE SIMULATING...' : 'SIMULATE BREACH (HF)'}
+                </button>
+              </div>
+            </div>
+
+            {/* Content Viewport */}
+            {feedsViewMode === 'solo' ? (
+              <div style={{ flex: 1, position: 'relative' }}>
+                <TacticalVideoFeed
+                  feedId={soloFeedId || 'CAM-NORTH-04'}
+                  compact={false}
+                  onFeedSelect={(id) => setSoloFeedId(id)}
+                  onTriggerIncident={(id) => {
+                    setSelectedIncidentId(id);
+                    setAuthQueueCount(prev => prev + 1);
+                  }}
+                />
+              </div>
+            ) : (
+              <div style={{
+                flex: 1,
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, 1fr)',
+                gridTemplateRows: 'repeat(2, 1fr)',
+                gap: '4px',
+                padding: '4px',
+                background: '#04060a'
+              }}>
+                {TACTICAL_FEEDS.map((f) => (
+                  <div 
+                    key={f.id} 
+                    style={{ 
+                      position: 'relative', 
+                      border: '1px solid #1e2633', 
+                      borderRadius: '2px', 
+                      overflow: 'hidden',
+                      display: 'flex',
+                      flexDirection: 'column'
+                    }}
+                  >
+                    <div style={{
+                      position: 'absolute',
+                      top: '4px',
+                      right: '4px',
+                      zIndex: 10
+                    }}>
+                      <button
+                        onClick={() => {
+                          setSoloFeedId(f.id);
+                          setFeedsViewMode('solo');
+                        }}
+                        style={{
+                          background: 'rgba(15, 23, 42, 0.8)',
+                          border: '1px solid rgba(56, 189, 248, 0.4)',
+                          color: '#38bdf8',
+                          padding: '3px 6px',
+                          borderRadius: '2px',
+                          fontSize: '9px',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '3px'
+                        }}
+                      >
+                        <Maximize2 size={10} />
+                        <span>SOLO</span>
+                      </button>
+                    </div>
+                    <TacticalVideoFeed
+                      feedId={f.id}
+                      compact={true}
+                      onTriggerIncident={(id) => {
+                        setSelectedIncidentId(id);
+                        setAuthQueueCount(prev => prev + 1);
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         );
 

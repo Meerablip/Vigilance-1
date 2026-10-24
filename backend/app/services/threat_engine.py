@@ -69,6 +69,7 @@ class ThreatPolicyEngine:
             created_at=now
         )
         db.add(incident)
+        db.flush()
 
         # Step 4: If L1/L2 auto-dispatched, create simulated connected defense network message
         if workflow_status == "automated_dispatched":
