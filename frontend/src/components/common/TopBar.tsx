@@ -12,7 +12,8 @@ import {
   ChevronDown,
   UserPlus,
   LogOut,
-  Sliders
+  Sliders,
+  Download
 } from 'lucide-react';
 import type { ThreatLevel, PageId } from '../../types';
 
@@ -46,6 +47,30 @@ export const TopBar: React.FC<TopBarProps> = ({
   const [selectedSector, setSelectedSector] = useState<string>('All Sectors');
   const [selectedTimeRange, setSelectedTimeRange] = useState<string>('Last 24 Hours');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+
+  useEffect(() => {
+    const handleBeforeInstall = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const choiceResult = await deferredPrompt.userChoice;
+      if (choiceResult.outcome === 'accepted') {
+        console.log('Vigilance PWA installed by operator');
+      }
+      setDeferredPrompt(null);
+    } else {
+      alert('To install Vigilance as a PWA on your system:\n\n• In Chrome/Edge: Click the Install icon in the address bar (or Menu > "Install Vigilance")\n• On iOS/Safari: Tap Share > "Add to Home Screen"');
+    }
+  };
 
   useEffect(() => {
     const updateClock = () => {
@@ -343,6 +368,29 @@ export const TopBar: React.FC<TopBarProps> = ({
           title="Recent notifications"
         >
           <Bell size={14} />
+        </button>
+
+        {/* PWA Install Button */}
+        <button
+          onClick={handleInstallClick}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            padding: '3px 7px',
+            background: 'var(--military-green-surface)',
+            border: '1px solid var(--military-green-border)',
+            borderRadius: '2px',
+            color: 'var(--military-green-highlight)',
+            fontSize: '10px',
+            fontWeight: 700,
+            cursor: 'pointer',
+            fontFamily: 'monospace'
+          }}
+          title="Install Vigilance as standalone Desktop/Mobile PWA"
+        >
+          <Download size={11} />
+          <span>INSTALL APP</span>
         </button>
 
         {/* Server Clock */}

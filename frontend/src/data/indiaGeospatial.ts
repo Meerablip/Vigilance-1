@@ -175,6 +175,9 @@ export const SENSOR_NODES: TacticalSensorNode[] = [
   }
 ];
 
+export const SENSORS = SENSOR_NODES;
+export type Sensor = TacticalSensorNode;
+
 // 3. Active 5-Level Threat Incidents on Map
 export const ACTIVE_INCIDENTS: TacticalIncidentMarker[] = [
   {

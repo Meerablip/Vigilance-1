@@ -15,6 +15,20 @@ import { ConnectedSystemsPanel } from './components/decision/ConnectedSystemsPan
 import { IncidentDetailsView } from './components/investigation/IncidentDetailsView';
 import { IncidentPlaybackView } from './components/investigation/IncidentPlaybackView';
 import { SensorFusionView } from './components/investigation/SensorFusionView';
+import { ZonesGeofencesView } from './components/operations/ZonesGeofencesView';
+import { AnalyticsDashboardView } from './components/operations/AnalyticsDashboardView';
+import { ReportsView } from './components/operations/ReportsView';
+import { SensorsInventoryView } from './components/operations/SensorsInventoryView';
+import { LocationsView } from './components/operations/LocationsView';
+import { AgentsModelsView } from './components/operations/AgentsModelsView';
+import { AuditLogView } from './components/governance/AuditLogView';
+import { SystemHealthView } from './components/governance/SystemHealthView';
+import { UsersRolesView } from './components/governance/UsersRolesView';
+import { ShiftHandoffView } from './components/governance/ShiftHandoffView';
+import { SettingsView } from './components/governance/SettingsView';
+import { PatternsPredictionsView } from './components/intelligence/PatternsPredictionsView';
+import { SimulationTrainingView } from './components/simulation/SimulationTrainingView';
+import { DecisionWorkflowView } from './components/decision/DecisionWorkflowView';
 import { 
   Activity,
   AlertOctagon,
@@ -386,6 +400,54 @@ export const App: React.FC = () => {
 
       case 'connected_systems':
         return <ConnectedSystemsPanel />;
+
+      case 'decision_workflow':
+        return <DecisionWorkflowView onNavigate={(p) => setCurrentPage(p)} />;
+
+      case 'zones':
+        return <ZonesGeofencesView onNavigate={(p) => setCurrentPage(p)} />;
+
+      case 'analytics':
+        return <AnalyticsDashboardView onNavigate={(p) => setCurrentPage(p)} />;
+
+      case 'reports':
+        return <ReportsView onNavigate={(p) => setCurrentPage(p)} currentUser={currentUser} />;
+
+      case 'sensors':
+        return <SensorsInventoryView onNavigate={(p) => setCurrentPage(p)} />;
+
+      case 'locations':
+        return <LocationsView onNavigate={(p) => setCurrentPage(p)} />;
+
+      case 'models':
+        return <AgentsModelsView onNavigate={(p) => setCurrentPage(p)} />;
+
+      case 'users':
+        return <UsersRolesView onNavigate={(p) => setCurrentPage(p)} onOpenInviteModal={() => setIsInviteModalOpen(true)} />;
+
+      case 'audit_log':
+        return <AuditLogView onNavigate={(p) => setCurrentPage(p)} />;
+
+      case 'system_health':
+        return <SystemHealthView onNavigate={(p) => setCurrentPage(p)} />;
+
+      case 'settings':
+        return <SettingsView />;
+
+      case 'simulation':
+        return (
+          <SimulationTrainingView
+            onNavigate={(p) => setCurrentPage(p)}
+            onStartSimulation={handleStartSimulation}
+            isSimulating={isSimulating}
+          />
+        );
+
+      case 'patterns':
+        return <PatternsPredictionsView onNavigate={(p) => setCurrentPage(p)} />;
+
+      case 'shift_handoff':
+        return <ShiftHandoffView onNavigate={(p) => setCurrentPage(p)} currentUser={currentUser} />;
 
       default:
         return (

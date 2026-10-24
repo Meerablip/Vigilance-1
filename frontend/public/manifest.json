@@ -1,0 +1,18 @@
+{
+  "name": "VIGILANCE — National Defense C2 Platform",
+  "short_name": "VIGILANCE",
+  "description": "Multi-Sensor Command & Control Platform with AI Threat Classification & Computer Vision Fusion",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0b0d",
+  "theme_color": "#0a0b0d",
+  "orientation": "landscape-primary",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
