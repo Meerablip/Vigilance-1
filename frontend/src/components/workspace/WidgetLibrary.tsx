@@ -58,6 +58,7 @@ export const availableWidgets: AvailableWidgetDef[] = [
   { type: 'analytics_card', title: 'Response Metrics', description: 'Five-level L1-L5 distribution, false-alarm rates, and latency.', category: 'analysis', defaultW: 15, defaultH: 11, icon: BarChart3 },
 
   // Operations
+  { type: 'connected_systems', title: 'Connected Defense Systems', description: 'Military network ledger (AD-Net, HQ, QRF) with live ACK receipts.', category: 'operations', defaultW: 18, defaultH: 14, icon: Radio },
   { type: 'system_health_card', title: 'Subsystem Telemetry', description: 'Heartbeat of AI inference engine, database latency, and sensors.', category: 'operations', defaultW: 14, defaultH: 9, icon: Activity },
   { type: 'shift_handoff_card', title: 'Shift Transfer Summary', description: 'Outstanding items, unassigned alerts, and watch officer log.', category: 'operations', defaultW: 14, defaultH: 10, icon: Repeat }
 ];

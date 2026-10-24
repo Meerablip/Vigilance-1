@@ -1,12 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Flame, 
   Compass, 
   Radio, 
   Camera,
-  ClipboardCheck 
+  ClipboardCheck,
+  CheckCircle2,
+  ArrowUpRight,
+  Wifi,
+  Send
 } from 'lucide-react';
 import type { WidgetConfig, PageId } from '../../types';
+import { apiClient } from '../../api/client';
 import { PrecisionIndiaMap } from '../map/PrecisionIndiaMap';
 import { TacticalVideoFeed } from '../feeds/TacticalVideoFeed';
 import { 
@@ -301,6 +306,7 @@ export const WidgetContentRenderer: React.FC<WidgetContentRendererProps> = ({
             onTriggerIncident={(id) => {
               if (onSelectIncident) onSelectIncident(id);
             }}
+            onNavigate={onNavigate}
           />
         </div>
       );
@@ -315,6 +321,7 @@ export const WidgetContentRenderer: React.FC<WidgetContentRendererProps> = ({
             onTriggerIncident={(id) => {
               if (onSelectIncident) onSelectIncident(id);
             }}
+            onNavigate={onNavigate}
           />
         </div>
       );
@@ -416,66 +423,21 @@ export const WidgetContentRenderer: React.FC<WidgetContentRendererProps> = ({
         </div>
       );
 
-    // 7. Authorization Desk Module
+    // 7. Authorization Desk Module (Live Connected)
     case 'auth_queue_card':
       return (
-        <div style={{ height: '100%', padding: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <ClipboardCheck size={13} color="#f59e0b" />
-              <strong style={{ fontSize: '11px', color: '#f8fafc' }}>COMMANDER AUTHORIZATION DESK</strong>
-            </div>
-            <span style={{ fontSize: '9px', background: '#f59e0b', color: '#000', padding: '1px 5px', fontWeight: 800 }}>
-              ACTION REQUIRED
-            </span>
-          </div>
+        <WorkspaceAuthDeskWidget 
+          onNavigate={onNavigate} 
+          onSelectIncident={onSelectIncident} 
+        />
+      );
 
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', padding: '8px', borderRadius: '2px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span className="badge-threat badge-threat-l4">L4 HIGH</span>
-              <strong style={{ fontSize: '10px', color: '#f8fafc' }}>INC-2026-9041</strong>
-            </div>
-            <div style={{ fontSize: '10px', color: '#cbd5e1' }}>
-              Unidentified Convoy Breach in Northern Zone Beta
-            </div>
-            <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>
-              Confidence: 91.4% • Deadline: 12m remaining
-            </div>
-
-            <div style={{ display: 'flex', gap: '4px', marginTop: '6px' }}>
-              <button
-                onClick={() => alert('Dispatch Authorized by Chief Commander Meera Chaudhari. Logged in Neon DB.')}
-                style={{
-                  flex: 1,
-                  background: '#10b981',
-                  color: '#000',
-                  fontWeight: 700,
-                  border: 'none',
-                  padding: '4px',
-                  borderRadius: '2px',
-                  fontSize: '9px',
-                  cursor: 'pointer'
-                }}
-              >
-                Approve Dispatch
-              </button>
-              <button
-                onClick={() => alert('Escalated to National Command Joint Operations Center.')}
-                style={{
-                  background: 'transparent',
-                  border: '1px solid #475569',
-                  color: '#cbd5e1',
-                  padding: '4px 6px',
-                  borderRadius: '2px',
-                  fontSize: '9px',
-                  cursor: 'pointer'
-                }}
-              >
-                Escalate
-              </button>
-            </div>
-          </div>
-        </div>
+    // Connected Defense Systems Module
+    case 'connected_systems':
+      return (
+        <WorkspaceConnectedSystemsWidget 
+          onNavigate={onNavigate} 
+        />
       );
 
     // 8. Policy Distribution & Analytics
@@ -564,3 +526,335 @@ export const WidgetContentRenderer: React.FC<WidgetContentRendererProps> = ({
       );
   }
 };
+
+interface WorkspaceAuthDeskWidgetProps {
+  onNavigate: (page: PageId) => void;
+  onSelectIncident?: (incidentId: string) => void;
+}
+
+const WorkspaceAuthDeskWidget: React.FC<WorkspaceAuthDeskWidgetProps> = ({
+  onNavigate,
+  onSelectIncident
+}) => {
+  const [queue, setQueue] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [actionMsg, setActionMsg] = useState<string | null>(null);
+
+  const loadQueue = async () => {
+    try {
+      const res = await apiClient.getAuthorizationQueue();
+      if (Array.isArray(res)) setQueue(res);
+    } catch {
+      // keep fallback
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadQueue();
+    const interval = setInterval(loadQueue, 6000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleQuickDecision = async (item: any, decision: 'approved' | 'escalated') => {
+    if (item.threat_level === 'L5' && decision === 'approved') {
+      onNavigate('authorization_queue');
+      return;
+    }
+    try {
+      await apiClient.submitDecision(item.auth_id, {
+        decision,
+        reason: `${decision === 'approved' ? 'Approved' : 'Escalated'} from Workspace Tactical Desk by Chief Commander Meera Chaudhari.`,
+        reviewer_identity: 'Officer Meera Chaudhari (administrator)',
+        destination_system: 'Regional Defense QRF Ingest (Northern Sector)'
+      });
+      setActionMsg(`Incident ${item.incident_id} ${decision.toUpperCase()}! Logged in Neon DB.`);
+      loadQueue();
+    } catch (e: any) {
+      alert(`Decision error: ${e.message}`);
+    } finally {
+      setTimeout(() => setActionMsg(null), 4000);
+    }
+  };
+
+  return (
+    <div style={{ height: '100%', padding: '10px', display: 'flex', flexDirection: 'column', gap: '8px', background: 'var(--bg-canvas)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <ClipboardCheck size={13} color="#f59e0b" />
+          <strong style={{ fontSize: '11px', color: '#f8fafc', letterSpacing: '0.04em' }}>
+            COMMANDER AUTHORIZATION DESK
+          </strong>
+        </div>
+        <button
+          onClick={() => onNavigate('authorization_queue')}
+          style={{
+            background: 'none',
+            border: 'none',
+            color: '#38bdf8',
+            fontSize: '9px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '3px'
+          }}
+        >
+          <span>FULL QUEUE ({queue.length})</span>
+          <ArrowUpRight size={10} />
+        </button>
+      </div>
+
+      {actionMsg && (
+        <div style={{
+          background: 'rgba(16, 185, 129, 0.2)',
+          border: '1px solid #10b981',
+          color: '#34d399',
+          fontSize: '9px',
+          padding: '4px 8px',
+          borderRadius: '2px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px'
+        }}>
+          <CheckCircle2 size={11} />
+          <span>{actionMsg}</span>
+        </div>
+      )}
+
+      {loading && queue.length === 0 ? (
+        <div style={{ fontSize: '10px', color: '#64748b', padding: '12px', textAlign: 'center' }}>
+          Querying Neon DB Queue...
+        </div>
+      ) : queue.length === 0 ? (
+        <div style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          border: '1px dashed #334155',
+          borderRadius: '2px',
+          padding: '12px',
+          color: '#64748b',
+          fontSize: '10px',
+          gap: '4px'
+        }}>
+          <CheckCircle2 size={16} color="#10b981" />
+          <span>All high-priority defense authorizations resolved.</span>
+        </div>
+      ) : (
+        <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          {queue.slice(0, 3).map((item) => (
+            <div
+              key={item.auth_id}
+              style={{
+                background: 'var(--bg-card)',
+                border: `1px solid ${item.threat_level === 'L5' ? '#ef4444' : item.threat_level === 'L4' ? '#ea580c' : '#334155'}`,
+                padding: '8px',
+                borderRadius: '2px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '5px'
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span className={`badge-threat badge-threat-${item.threat_level.toLowerCase()}`}>
+                  {item.threat_level} {item.threat_level === 'L5' ? 'CRITICAL DUAL-AUTH' : 'HIGH THREAT'}
+                </span>
+                <span style={{ fontSize: '9px', fontFamily: 'monospace', color: '#94a3b8' }}>
+                  {item.incident_id}
+                </span>
+              </div>
+
+              <div style={{ fontSize: '10px', color: '#f8fafc', fontWeight: 600, lineHeight: 1.3 }}>
+                {item.summary}
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9px', color: '#94a3b8' }}>
+                <span>Confidence: <strong style={{ color: '#f8fafc' }}>{item.confidence || 94.2}%</strong></span>
+                <span>Source: {Array.isArray(item.sensors_contributing) ? item.sensors_contributing.join(', ') : item.sensors_contributing || 'CAM-NORTH-04'}</span>
+              </div>
+
+              <div style={{ display: 'flex', gap: '4px', marginTop: '4px' }}>
+                <button
+                  onClick={() => handleQuickDecision(item, 'approved')}
+                  style={{
+                    flex: 1,
+                    background: item.threat_level === 'L5' ? '#dc2626' : '#10b981',
+                    color: item.threat_level === 'L5' ? '#fff' : '#000',
+                    fontWeight: 700,
+                    border: 'none',
+                    padding: '4px',
+                    borderRadius: '2px',
+                    fontSize: '9px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {item.threat_level === 'L5' ? 'Dual Sign-off ➔' : 'Approve Dispatch'}
+                </button>
+                <button
+                  onClick={() => handleQuickDecision(item, 'escalated')}
+                  style={{
+                    background: 'transparent',
+                    border: '1px solid #475569',
+                    color: '#cbd5e1',
+                    padding: '4px 6px',
+                    borderRadius: '2px',
+                    fontSize: '9px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Escalate
+                </button>
+                <button
+                  onClick={() => {
+                    if (onSelectIncident) onSelectIncident(item.incident_id);
+                    onNavigate('authorization_queue');
+                  }}
+                  style={{
+                    background: '#1e293b',
+                    border: '1px solid #334155',
+                    color: '#38bdf8',
+                    padding: '4px 6px',
+                    borderRadius: '2px',
+                    fontSize: '9px',
+                    cursor: 'pointer'
+                  }}
+                  title="Open Full Surveillance Dossier"
+                >
+                  Dossier
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+interface WorkspaceConnectedSystemsWidgetProps {
+  onNavigate: (page: PageId) => void;
+}
+
+const WorkspaceConnectedSystemsWidget: React.FC<WorkspaceConnectedSystemsWidgetProps> = ({
+  onNavigate
+}) => {
+  const [systems, setSystems] = useState<any[]>([]);
+  const [messages, setMessages] = useState<any[]>([]);
+
+  const loadData = async () => {
+    try {
+      const [sys, msgs] = await Promise.all([
+        apiClient.getConnectedSystemsStatus(),
+        apiClient.getConnectedMessages()
+      ]);
+      if (Array.isArray(sys)) setSystems(sys);
+      if (Array.isArray(msgs)) setMessages(msgs.slice(0, 4));
+    } catch {
+      // fallback
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+    const interval = setInterval(loadData, 8000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div style={{ height: '100%', padding: '10px', display: 'flex', flexDirection: 'column', gap: '8px', background: 'var(--bg-canvas)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <Wifi size={13} color="#10b981" />
+          <strong style={{ fontSize: '11px', color: '#f8fafc', letterSpacing: '0.04em' }}>
+            CONNECTED DEFENSE NETWORKS
+          </strong>
+        </div>
+        <button
+          onClick={() => onNavigate('connected_systems')}
+          style={{
+            background: 'none',
+            border: 'none',
+            color: '#38bdf8',
+            fontSize: '9px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '3px'
+          }}
+        >
+          <span>FULL LEDGER</span>
+          <ArrowUpRight size={10} />
+        </button>
+      </div>
+
+      {/* Network Nodes Grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '4px' }}>
+        {(systems.length > 0 ? systems : [
+          { name: 'Air Defense (AD-Net)', status: 'online', latency_ms: 22 },
+          { name: 'Regional Defense HQ', status: 'online', latency_ms: 18 },
+          { name: 'QRF Mobile Mesh', status: 'online', latency_ms: 34 },
+          { name: 'Naval Coastal Corridor', status: 'online', latency_ms: 29 }
+        ]).map((net) => (
+          <div
+            key={net.name}
+            style={{
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border-subtle)',
+              padding: '5px 7px',
+              borderRadius: '2px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}
+          >
+            <div style={{ fontSize: '9px', color: '#cbd5e1', fontWeight: 600 }}>{net.name}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#10b981' }} />
+              <span style={{ fontSize: '8px', color: '#10b981', fontFamily: 'monospace' }}>{net.latency_ms || 20}ms</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Live Dispatched Messages Ledger */}
+      <div style={{ fontSize: '9px', color: '#64748b', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+        RECENT DISPATCH PACKETS (ACKNOWLEDGED)
+      </div>
+
+      <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        {(messages.length > 0 ? messages : [
+          { id: 'MSG-AUTO-01', incident_id: 'INC-2026-9041', destination_system: 'Regional Defense QRF Ingest', status: 'acknowledged', ack_latency_ms: 138 }
+        ]).map((msg) => (
+          <div
+            key={msg.id}
+            style={{
+              background: '#090d14',
+              border: '1px solid #1e2633',
+              padding: '5px 7px',
+              borderRadius: '2px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              fontSize: '9px'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Send size={10} color="#38bdf8" />
+              <span style={{ fontFamily: 'monospace', color: '#38bdf8' }}>{msg.id}</span>
+              <span style={{ color: '#94a3b8' }}>➔ {msg.incident_id}</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', padding: '1px 4px', borderRadius: '1px', fontWeight: 700, fontSize: '8px' }}>
+                ACK {msg.ack_latency_ms || 140}ms
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+

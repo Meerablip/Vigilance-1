@@ -137,8 +137,23 @@ export const apiClient = {
     body: JSON.stringify(data),
   }),
   getAuthorizationQueue: () => apiClient.request<any[]>('/authorizations/queue'),
-  submitDecision: (authId: string, data: { decision: string; reason: string; reviewer_identity: string }) => apiClient.request<any>(`/authorizations/${authId}/decide`, {
+  submitDecision: (authId: string, data: { 
+    decision: string; 
+    reason: string; 
+    reviewer_identity: string;
+    second_reviewer_identity?: string;
+    second_reviewer_role?: string;
+    destination_system?: string;
+  }) => apiClient.request<any>(`/authorizations/${authId}/decide`, {
     method: 'POST',
     body: JSON.stringify(data),
+  }),
+
+  // Connected Systems & Defense Messaging
+  getConnectedSystemsStatus: () => apiClient.request<any[]>('/connected-systems/status'),
+  getConnectedMessages: () => apiClient.request<any[]>('/connected-systems/messages'),
+  pingConnectedSystem: (destination_system: string) => apiClient.request<any>('/connected-systems/ping', {
+    method: 'POST',
+    body: JSON.stringify({ destination_system }),
   }),
 };

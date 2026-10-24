@@ -10,9 +10,10 @@ import { apiClient } from './api/client';
 import type { PageId, ThreatLevel } from './types';
 import { PrecisionIndiaMap } from './components/map/PrecisionIndiaMap';
 import { TacticalVideoFeed, TACTICAL_FEEDS } from './components/feeds/TacticalVideoFeed';
+import { AuthorizationQueueDesk } from './components/decision/AuthorizationQueueDesk';
+import { ConnectedSystemsPanel } from './components/decision/ConnectedSystemsPanel';
 import { 
   ShieldAlert, 
-  ClipboardCheck, 
   Activity,
   AlertOctagon,
   X,
@@ -274,6 +275,7 @@ export const App: React.FC = () => {
                     setSelectedIncidentId(id);
                     setAuthQueueCount(prev => prev + 1);
                   }}
+                  onNavigate={(page) => setCurrentPage(page)}
                 />
               </div>
             ) : (
@@ -334,6 +336,7 @@ export const App: React.FC = () => {
                         setSelectedIncidentId(id);
                         setAuthQueueCount(prev => prev + 1);
                       }}
+                      onNavigate={(page) => setCurrentPage(page)}
                     />
                   </div>
                 ))}
@@ -447,61 +450,17 @@ export const App: React.FC = () => {
 
       case 'authorization_queue':
         return (
-          <div style={{ flex: 1, padding: '20px', background: 'var(--bg-canvas)', color: 'var(--text-primary)', overflow: 'auto' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-              <ClipboardCheck size={18} color="var(--threat-l3)" />
-              <h2 style={{ fontSize: '16px', fontWeight: 700 }}>HUMAN-IN-THE-LOOP AUTHORIZATION QUEUE ({authQueueCount} PENDING)</h2>
-            </div>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '16px', fontSize: '11px' }}>
-              High-consequence decisions for L3, L4, and L5 incidents requiring supervisory authorization with recorded rationale and audit logging in Neon PostgreSQL.
-            </p>
-            <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: '2px', padding: '14px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '12px', marginBottom: '12px' }}>
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span className="badge-threat badge-threat-l4">L4 HIGH</span>
-                    <strong style={{ fontSize: '12px' }}>INC-2026-9041 • Northern Line Perimeter Breach Alert</strong>
-                  </div>
-                  <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '4px' }}>
-                    Requires Officer {currentUser.officer_name} Sign-off • Deadline: 12 minutes remaining
-                  </div>
-                </div>
-                <div style={{ display: 'flex', gap: '6px' }}>
-                  <button 
-                    onClick={() => {
-                      const reason = prompt('Mandatory Justification Required: Enter decision rationale for audit ledger:');
-                      if (reason && reason.trim()) {
-                        alert(`Decision Approved by ${currentUser.officer_name}. Dispatched and logged in Neon DB.`);
-                        setAuthQueueCount(Math.max(0, authQueueCount - 1));
-                      }
-                    }}
-                    style={{ background: '#10b981', color: '#000', fontWeight: 700, padding: '5px 12px', borderRadius: '2px', border: 'none', cursor: 'pointer', fontSize: '10px' }}
-                  >
-                    Approve Dispatch
-                  </button>
-                  <button 
-                    onClick={() => {
-                      const reason = prompt('Reason for dismissal:');
-                      if (reason) {
-                        alert(`Dismissal recorded in immutable audit log.`);
-                        setAuthQueueCount(Math.max(0, authQueueCount - 1));
-                      }
-                    }}
-                    style={{ background: 'transparent', border: '1px solid var(--threat-l5)', color: 'var(--threat-l5)', padding: '5px 10px', borderRadius: '2px', cursor: 'pointer', fontSize: '10px' }}
-                  >
-                    Dismiss
-                  </button>
-                  <button 
-                    onClick={() => alert('Escalated to National Command Joint Operations Center.')}
-                    style={{ background: '#242a36', border: '1px solid #374254', color: '#e2e8f0', fontWeight: 600, padding: '5px 10px', borderRadius: '2px', cursor: 'pointer', fontSize: '10px' }}
-                  >
-                    Escalate
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+          <AuthorizationQueueDesk
+            currentUser={currentUser}
+            onSelectIncident={(incId) => {
+              setSelectedIncidentId(incId);
+              setCurrentPage('incident_details');
+            }}
+          />
         );
+
+      case 'connected_systems':
+        return <ConnectedSystemsPanel />;
 
       default:
         return (

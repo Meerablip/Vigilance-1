@@ -9,11 +9,12 @@ import {
   Pause, 
   AlertTriangle, 
   Zap, 
-  CheckCircle2,
   Film,
   Upload,
   Volume2,
-  VolumeX
+  VolumeX,
+  ShieldAlert,
+  ArrowRight
 } from 'lucide-react';
 
 export type ThermalPalette = 'EO' | 'White-Hot' | 'Black-Hot' | 'Ironbow' | 'NVG Green';
@@ -87,13 +88,15 @@ interface TacticalVideoFeedProps {
   compact?: boolean;
   onFeedSelect?: (feedId: string) => void;
   onTriggerIncident?: (incidentId: string) => void;
+  onNavigate?: (page: any) => void;
 }
 
 export const TacticalVideoFeed: React.FC<TacticalVideoFeedProps> = ({
   feedId = 'CAM-NORTH-04',
   compact = false,
   onFeedSelect,
-  onTriggerIncident
+  onTriggerIncident,
+  onNavigate
 }) => {
   const [selectedFeedId, setSelectedFeedId] = useState<string>(feedId);
   const [palette, setPalette] = useState<ThermalPalette>('EO');
@@ -109,7 +112,11 @@ export const TacticalVideoFeed: React.FC<TacticalVideoFeedProps> = ({
   const [duration, setDuration] = useState<number>(0);
   const [isBreached] = useState<boolean>(true);
   const [isTriggering, setIsTriggering] = useState<boolean>(false);
-  const [triggerToast, setTriggerToast] = useState<string | null>(null);
+  const [triggerIncidentData, setTriggerIncidentData] = useState<{
+    incident_id: string;
+    threat_level: 'L4' | 'L5';
+    summary: string;
+  } | null>(null);
   const [timeString, setTimeString] = useState<string>('');
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -232,35 +239,54 @@ export const TacticalVideoFeed: React.FC<TacticalVideoFeedProps> = ({
     };
   }, [selectedFeedId, palette, showYoloBoxes, showTripwire, showHUD, isPlaying, isBreached, feedSource]);
 
-  // Handle Trigger Breach workflow to Backend
-  const handleSimulateBreach = async () => {
+  // Handle Trigger Breach workflow to Backend (Supports L4 High and L5 Critical)
+  const handleSimulateBreach = async (level: 'L4' | 'L5' = 'L4') => {
     setIsTriggering(true);
+    const summary = level === 'L5'
+      ? `${activeFeed.name}: Hostile Autonomous Drone Swarm penetrating forward defense corridor. Immediate Two-Person Command Sign-off required.`
+      : `${activeFeed.name}: Target TRK-01 crossed restricted perimeter Zone B in active surveillance video. Model reported 94.2% confidence.`;
+
     try {
       const response = await fetch('http://127.0.0.1:8000/api/cv/trigger-incident', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           feed_id: selectedFeedId,
-          threat_level: 'L4',
-          detection_summary: `${activeFeed.name}: Target TRK-01 crossed restricted perimeter Zone B in active surveillance video. Model reported 94.2% confidence.`,
+          threat_level: level,
+          detection_summary: summary,
           officer_email: 'Meera@defence.com'
         })
       });
 
       if (response.ok) {
         const data = await response.json();
-        setTriggerToast(`BREACH LOGGED: Incident ${data.incident_id} created in Neon DB and routed to Chief Commander Meera Chaudhari.`);
+        setTriggerIncidentData({
+          incident_id: data.incident_id,
+          threat_level: level,
+          summary: summary
+        });
         if (onTriggerIncident) {
           onTriggerIncident(data.incident_id);
         }
       } else {
-        setTriggerToast(`BREACH LOGGED: Perimeter Tripwire breach simulated for ${selectedFeedId}.`);
+        const fallbackId = `INC-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+        setTriggerIncidentData({
+          incident_id: fallbackId,
+          threat_level: level,
+          summary: summary
+        });
+        if (onTriggerIncident) onTriggerIncident(fallbackId);
       }
     } catch {
-      setTriggerToast(`BREACH LOGGED: Simulated L4 threat created from Hugging Face VisDrone YOLO model.`);
+      const fallbackId = `INC-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+      setTriggerIncidentData({
+        incident_id: fallbackId,
+        threat_level: level,
+        summary: summary
+      });
+      if (onTriggerIncident) onTriggerIncident(fallbackId);
     } finally {
       setIsTriggering(false);
-      setTimeout(() => setTriggerToast(null), 6000);
     }
   };
 
@@ -799,59 +825,133 @@ export const TacticalVideoFeed: React.FC<TacticalVideoFeedProps> = ({
             <Camera size={12} />
           </button>
 
-          {/* Simulate Threat Breach Button */}
-          <button
-            onClick={handleSimulateBreach}
-            disabled={isTriggering}
-            style={{
-              background: isTriggering ? '#7f1d1d' : '#dc2626',
-              border: '1px solid #ef4444',
-              color: '#fff',
-              fontSize: '10px',
-              fontWeight: 800,
-              padding: '3px 10px',
-              borderRadius: '2px',
-              cursor: isTriggering ? 'wait' : 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '5px',
-              boxShadow: '0 0 8px rgba(220, 38, 38, 0.4)'
-            }}
-          >
-            <Zap size={11} />
-            <span>{isTriggering ? 'DISPATCHING...' : 'TRIGGER BREACH'}</span>
-          </button>
+          {/* Dual Threat Breach Simulator Buttons */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <button
+              onClick={() => handleSimulateBreach('L4')}
+              disabled={isTriggering}
+              style={{
+                background: isTriggering ? '#7f1d1d' : '#ea580c',
+                border: '1px solid #f97316',
+                color: '#fff',
+                fontSize: '9px',
+                fontWeight: 800,
+                padding: '3px 7px',
+                borderRadius: '2px',
+                cursor: isTriggering ? 'wait' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '3px',
+                boxShadow: '0 0 6px rgba(234, 88, 12, 0.4)'
+              }}
+              title="Simulate L4 High Threat Perimeter Convoy Incursion"
+            >
+              <Zap size={10} />
+              <span>{isTriggering ? 'LOGGING...' : 'L4 BREACH'}</span>
+            </button>
+
+            <button
+              onClick={() => handleSimulateBreach('L5')}
+              disabled={isTriggering}
+              style={{
+                background: isTriggering ? '#7f1d1d' : '#dc2626',
+                border: '1px solid #ef4444',
+                color: '#fff',
+                fontSize: '9px',
+                fontWeight: 800,
+                padding: '3px 7px',
+                borderRadius: '2px',
+                cursor: isTriggering ? 'wait' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '3px',
+                boxShadow: '0 0 8px rgba(220, 38, 38, 0.5)'
+              }}
+              title="Simulate L5 Critical Hostile Drone Swarm (Requires Two-Person Dual Authorization)"
+            >
+              <ShieldAlert size={10} />
+              <span>{isTriggering ? 'DISPATCHING...' : 'L5 CRITICAL'}</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Floating Incident Created Toast */}
-      {triggerToast && (
+      {/* Floating Interactive Incident Toast with Direct Queue Navigation */}
+      {triggerIncidentData && (
         <div 
           style={{
             position: 'absolute',
-            bottom: '50px',
+            bottom: '48px',
             right: '12px',
             background: 'rgba(15, 23, 42, 0.95)',
-            border: '1px solid #38bdf8',
+            border: `1px solid ${triggerIncidentData.threat_level === 'L5' ? '#ef4444' : '#f59e0b'}`,
             borderRadius: '3px',
-            padding: '8px 12px',
+            padding: '10px 12px',
             fontSize: '11px',
             color: '#f8fafc',
-            maxWidth: '380px',
-            boxShadow: '0 4px 18px rgba(0, 0, 0, 0.7)',
+            maxWidth: '420px',
+            boxShadow: '0 6px 24px rgba(0, 0, 0, 0.8)',
             display: 'flex',
             alignItems: 'flex-start',
-            gap: '8px',
+            gap: '10px',
             zIndex: 100
           }}
         >
-          <CheckCircle2 size={16} color="#38bdf8" style={{ flexShrink: 0, marginTop: '2px' }} />
-          <div>
-            <div style={{ fontWeight: 700, color: '#38bdf8', marginBottom: '2px' }}>
-              THREAT INGESTION SIMULATED
+          <div style={{
+            background: triggerIncidentData.threat_level === 'L5' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(245, 158, 11, 0.2)',
+            padding: '6px',
+            borderRadius: '2px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <ShieldAlert size={18} color={triggerIncidentData.threat_level === 'L5' ? '#ef4444' : '#f59e0b'} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span className={`badge-threat badge-threat-${triggerIncidentData.threat_level.toLowerCase()}`}>
+                  {triggerIncidentData.threat_level} THREAT DETECTED
+                </span>
+                <span style={{ fontSize: '10px', fontFamily: 'monospace', color: '#94a3b8' }}>
+                  {triggerIncidentData.incident_id}
+                </span>
+              </div>
+              <button
+                onClick={() => setTriggerIncidentData(null)}
+                style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', padding: 0 }}
+              >
+                ✕
+              </button>
             </div>
-            <div style={{ fontSize: '10px', color: '#cbd5e1', lineHeight: 1.4 }}>
-              {triggerToast}
+            <div style={{ fontSize: '10px', color: '#cbd5e1', lineHeight: 1.4, marginBottom: '8px' }}>
+              {triggerIncidentData.summary}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {onNavigate && (
+                <button
+                  onClick={() => onNavigate('authorization_queue')}
+                  style={{
+                    background: '#0284c7',
+                    border: 'none',
+                    color: '#fff',
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    padding: '4px 10px',
+                    borderRadius: '2px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                >
+                  <span>REVIEW & AUTHORIZE NOW</span>
+                  <ArrowRight size={11} />
+                </button>
+              )}
+              <span style={{ fontSize: '9px', color: '#94a3b8' }}>
+                {triggerIncidentData.threat_level === 'L5' ? 'Dual-Commander Sign-off Required' : 'Single Commander Review Required'}
+              </span>
             </div>
           </div>
         </div>
