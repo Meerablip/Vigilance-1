@@ -214,10 +214,10 @@ export const TopBar: React.FC<TopBarProps> = ({
               cursor: 'pointer'
             }}
           >
-            <option value="All Sectors">All Sectors</option>
-            <option value="Northern Frontier">Northern Frontier</option>
-            <option value="Western Maritime">Western Maritime</option>
-            <option value="Eastern Perimeter">Eastern Perimeter</option>
+            <option style={{ background: '#121418', color: '#f1f5f9' }} value="All Sectors">All Sectors</option>
+            <option style={{ background: '#121418', color: '#f1f5f9' }} value="Northern Frontier">Northern Frontier</option>
+            <option style={{ background: '#121418', color: '#f1f5f9' }} value="Western Maritime">Western Maritime</option>
+            <option style={{ background: '#121418', color: '#f1f5f9' }} value="Eastern Perimeter">Eastern Perimeter</option>
           </select>
         </div>
 
@@ -247,10 +247,10 @@ export const TopBar: React.FC<TopBarProps> = ({
               cursor: 'pointer'
             }}
           >
-            <option value="Live">Live</option>
-            <option value="Last 1 Hour">Last 1h</option>
-            <option value="Last 24 Hours">Last 24h</option>
-            <option value="Last 7 Days">Last 7d</option>
+            <option style={{ background: '#121418', color: '#f1f5f9' }} value="Live">Live</option>
+            <option style={{ background: '#121418', color: '#f1f5f9' }} value="Last 1 Hour">Last 1h</option>
+            <option style={{ background: '#121418', color: '#f1f5f9' }} value="Last 24 Hours">Last 24h</option>
+            <option style={{ background: '#121418', color: '#f1f5f9' }} value="Last 7 Days">Last 7d</option>
           </select>
         </div>
       </div>
@@ -497,7 +497,22 @@ export const TopBar: React.FC<TopBarProps> = ({
                   setShowUserMenu(false);
                   onNavigate('users');
                 }}
-                className="context-item"
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '7px',
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'var(--text-primary)',
+                  padding: '6px 8px',
+                  borderRadius: '2px',
+                  fontSize: '11px',
+                  textAlign: 'left',
+                  cursor: 'pointer'
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg-card-hover, #1f232b)')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
               >
                 <User size={12} />
                 <span>Users & Permissions</span>
@@ -508,7 +523,22 @@ export const TopBar: React.FC<TopBarProps> = ({
                   setShowUserMenu(false);
                   onNavigate('settings');
                 }}
-                className="context-item"
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '7px',
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'var(--text-primary)',
+                  padding: '6px 8px',
+                  borderRadius: '2px',
+                  fontSize: '11px',
+                  textAlign: 'left',
+                  cursor: 'pointer'
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg-card-hover, #1f232b)')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
               >
                 <Sliders size={12} />
                 <span>System Settings</span>

@@ -189,9 +189,18 @@ export const TacticalVideoFeed: React.FC<TacticalVideoFeedProps> = ({
 
     let animationFrameId: number;
     let t = 0;
+    let lastTime = 0;
 
-    const render = () => {
-      t += 0.02;
+    const render = (time: number) => {
+      // Throttle to ~25 FPS to keep CPU load low and application snappy
+      if (time - lastTime < 38) {
+        if (isPlaying) {
+          animationFrameId = requestAnimationFrame(render);
+        }
+        return;
+      }
+      lastTime = time;
+      t += 0.04;
       const w = canvas.width;
       const h = canvas.height;
 
@@ -232,7 +241,7 @@ export const TacticalVideoFeed: React.FC<TacticalVideoFeedProps> = ({
       }
     };
 
-    render();
+    animationFrameId = requestAnimationFrame(render);
 
     return () => {
       cancelAnimationFrame(animationFrameId);

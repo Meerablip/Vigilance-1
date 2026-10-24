@@ -393,7 +393,6 @@ export const App: React.FC = () => {
             currentUser={currentUser}
             onSelectIncident={(incId) => {
               setSelectedIncidentId(incId);
-              setCurrentPage('incident_details');
             }}
           />
         );

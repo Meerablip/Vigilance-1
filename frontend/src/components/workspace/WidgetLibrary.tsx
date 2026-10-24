@@ -22,6 +22,7 @@ import type { WidgetCategory } from '../../types';
 interface WidgetLibraryProps {
   isOpen: boolean;
   onClose: () => void;
+  onAddWidget?: (widget: AvailableWidgetDef) => void;
 }
 
 export interface AvailableWidgetDef {
@@ -65,7 +66,8 @@ export const availableWidgets: AvailableWidgetDef[] = [
 
 export const WidgetLibrary: React.FC<WidgetLibraryProps> = ({
   isOpen,
-  onClose
+  onClose,
+  onAddWidget
 }) => {
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -87,7 +89,9 @@ export const WidgetLibrary: React.FC<WidgetLibraryProps> = ({
       w: widget.defaultW,
       h: widget.defaultH
     };
-    e.dataTransfer.setData('application/json', JSON.stringify(payload));
+    const jsonStr = JSON.stringify(payload);
+    e.dataTransfer.setData('text/plain', jsonStr);
+    e.dataTransfer.setData('application/json', jsonStr);
     e.dataTransfer.effectAllowed = 'copy';
   };
 
@@ -245,13 +249,28 @@ export const WidgetLibrary: React.FC<WidgetLibraryProps> = ({
                   {w.description}
                 </p>
 
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '2px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '6px' }}>
                   <span style={{ fontSize: '8px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
                     Size: {w.defaultW}x{w.defaultH}
                   </span>
-                  <span style={{ fontSize: '8px', color: 'var(--text-muted)' }}>
-                    DRAG TO PLACE
-                  </span>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (onAddWidget) onAddWidget(w);
+                    }}
+                    style={{
+                      background: 'var(--military-green-surface, #14231b)',
+                      border: '1px solid var(--military-green-border, #244634)',
+                      color: 'var(--military-green-highlight, #86efac)',
+                      fontSize: '9px',
+                      fontWeight: 700,
+                      padding: '2px 8px',
+                      borderRadius: '2px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    + DEPLOY
+                  </button>
                 </div>
               </div>
             );

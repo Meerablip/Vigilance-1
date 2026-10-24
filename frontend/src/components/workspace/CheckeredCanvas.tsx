@@ -11,7 +11,8 @@ import {
   Maximize2, 
   Compass, 
   ChevronUp, 
-  ChevronDown
+  ChevronDown,
+  Layers
 } from 'lucide-react';
 
 interface CheckeredCanvasProps {
@@ -361,7 +362,7 @@ export const CheckeredCanvas: React.FC<CheckeredCanvasProps> = ({
     setIsDragOver(false);
 
     try {
-      const dataStr = e.dataTransfer.getData('application/json');
+      const dataStr = e.dataTransfer.getData('application/json') || e.dataTransfer.getData('text/plain');
       if (!dataStr) return;
       const def = JSON.parse(dataStr);
 
@@ -380,6 +381,8 @@ export const CheckeredCanvas: React.FC<CheckeredCanvasProps> = ({
           id: `widget-${Date.now()}`,
           x: gridX,
           y: gridY,
+          w: def.w || def.defaultW || 20,
+          h: def.h || def.defaultH || 14,
           minW: 10,
           minH: 8
         };
@@ -391,6 +394,31 @@ export const CheckeredCanvas: React.FC<CheckeredCanvasProps> = ({
     } catch (err) {
       console.error('Failed to parse dropped widget', err);
     }
+  };
+
+  const handleDeployFromLibrary = (def: any) => {
+    // Deploy into visible screen center
+    const centerX = (-panOffset.x + (window.innerWidth / 2) - 150) / zoom;
+    const centerY = (-panOffset.y + (window.innerHeight / 2) - 150) / zoom;
+    const gridX = Math.max(0, Math.floor(centerX / GRID_SIZE));
+    const gridY = Math.max(0, Math.floor(centerY / GRID_SIZE));
+
+    const newWidget: WidgetConfig = {
+      type: def.type,
+      title: def.title,
+      category: def.category,
+      w: def.defaultW || def.w || 20,
+      h: def.defaultH || def.h || 14,
+      id: `widget-${Date.now()}`,
+      x: gridX,
+      y: gridY,
+      minW: 10,
+      minH: 8
+    };
+
+    setWidgets(prev => [...prev, newWidget]);
+    setFocusedWidgetId(newWidget.id);
+    showToast(`Deployed ${newWidget.title} to workspace`);
   };
 
   const handleSaveLayout = () => {
@@ -539,7 +567,7 @@ export const CheckeredCanvas: React.FC<CheckeredCanvasProps> = ({
           }}
         >
           {widgets.map((widget) => (
-            <div key={widget.id} style={{ pointerEvents: 'auto' }} onWheel={(e) => e.stopPropagation()}>
+            <div key={widget.id} style={{ display: 'contents', pointerEvents: 'auto' }}>
               <ModularWidget
                 widget={widget}
                 gridSize={GRID_SIZE}
@@ -560,6 +588,82 @@ export const CheckeredCanvas: React.FC<CheckeredCanvasProps> = ({
             </div>
           ))}
         </div>
+
+        {/* Empty Canvas Quick Deploy Overlay */}
+        {widgets.length === 0 && (
+          <div style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            background: 'rgba(15, 17, 21, 0.96)',
+            border: '1px solid var(--military-green-border, #274734)',
+            borderRadius: '4px',
+            padding: '24px 32px',
+            textAlign: 'center',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '12px',
+            zIndex: 100,
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.8)'
+          }}>
+            <Layers size={28} color="var(--military-green-text, #86efac)" />
+            <h3 style={{ fontSize: '14px', fontWeight: 800, margin: 0, color: '#fff', letterSpacing: '0.05em' }}>
+              WORKSPACE CANVAS IS EMPTY
+            </h3>
+            <p style={{ fontSize: '11px', color: '#94a3b8', margin: 0, maxWidth: '340px', lineHeight: 1.4 }}>
+              Restore a tactical layout preset or open the module library to deploy radar, optical feeds, or threat maps.
+            </p>
+            <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+              <button
+                onClick={() => handleLoadPreset('commander')}
+                style={{
+                  background: 'var(--military-green-surface, #14231b)',
+                  border: '1px solid var(--military-green-border, #244634)',
+                  color: 'var(--military-green-highlight, #86efac)',
+                  padding: '6px 14px',
+                  borderRadius: '2px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  cursor: 'pointer'
+                }}
+              >
+                + Commander Overview
+              </button>
+              <button
+                onClick={() => handleLoadPreset('operator')}
+                style={{
+                  background: '#1a1d24',
+                  border: '1px solid #334155',
+                  color: '#f8fafc',
+                  padding: '6px 14px',
+                  borderRadius: '2px',
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                + Operator Feeds
+              </button>
+              <button
+                onClick={() => setIsLibraryOpen(true)}
+                style={{
+                  background: '#1a1d24',
+                  border: '1px solid #334155',
+                  color: '#38bdf8',
+                  padding: '6px 14px',
+                  borderRadius: '2px',
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                Open Library
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Floating Minimized Modules Quick-Restore Tray (Bottom Left) */}
         {minimizedWidgets.length > 0 && (
@@ -773,6 +877,7 @@ export const CheckeredCanvas: React.FC<CheckeredCanvasProps> = ({
         <WidgetLibrary
           isOpen={isLibraryOpen}
           onClose={() => setIsLibraryOpen(false)}
+          onAddWidget={handleDeployFromLibrary}
         />
       </div>
     </div>

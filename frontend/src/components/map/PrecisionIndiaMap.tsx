@@ -278,7 +278,17 @@ export const PrecisionIndiaMap: React.FC<PrecisionIndiaMapProps> = ({
       });
     });
 
+    const ro = new ResizeObserver(() => {
+      if (mapRef.current) {
+        mapRef.current.resize();
+      }
+    });
+    if (mapContainerRef.current) {
+      ro.observe(mapContainerRef.current);
+    }
+
     return () => {
+      ro.disconnect();
       map.remove();
     };
   }, []);
@@ -656,8 +666,22 @@ export const PrecisionIndiaMap: React.FC<PrecisionIndiaMapProps> = ({
       }
     };
 
+    const map = mapRef.current;
+    if (map) {
+      map.on('move', renderOverlay);
+      map.on('zoom', renderOverlay);
+      map.on('resize', renderOverlay);
+    }
+
     const animId = requestAnimationFrame(renderOverlay);
-    return () => cancelAnimationFrame(animId);
+    return () => {
+      cancelAnimationFrame(animId);
+      if (map) {
+        map.off('move', renderOverlay);
+        map.off('zoom', renderOverlay);
+        map.off('resize', renderOverlay);
+      }
+    };
   }, [layers, tracks, baseMap]);
 
   // Sector Quick Navigation Fly-to

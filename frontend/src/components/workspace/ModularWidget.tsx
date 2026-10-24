@@ -54,6 +54,7 @@ export const ModularWidget: React.FC<ModularWidgetProps> = ({
   // Handle Dragging
   const handleHeaderMouseDown = (e: React.MouseEvent) => {
     if (isLocked || widget.isMaximized || (e.target as HTMLElement).closest('.panel-btn')) return;
+    e.preventDefault();
     onFocus(widget.id);
     isDragging.current = true;
     dragStartPos.current = { x: e.clientX, y: e.clientY };
@@ -65,6 +66,7 @@ export const ModularWidget: React.FC<ModularWidgetProps> = ({
   // Handle Resizing
   const handleResizeStart = (e: React.MouseEvent, direction: string) => {
     if (isLocked || widget.isMaximized) return;
+    e.preventDefault();
     e.stopPropagation();
     onFocus(widget.id);
     isResizing.current = true;
@@ -168,13 +170,16 @@ export const ModularWidget: React.FC<ModularWidgetProps> = ({
   const isMin = widget.isMinimized;
 
   const panelStyle: React.CSSProperties = isMax ? {
-    position: 'absolute',
-    left: '8px',
-    top: '8px',
-    right: '8px',
-    bottom: '8px',
-    zIndex: 999
+    position: 'fixed',
+    top: '46px',
+    left: '52px',
+    right: '12px',
+    bottom: '24px',
+    width: 'auto',
+    height: 'auto',
+    zIndex: 1000
   } : {
+    position: 'absolute',
     left: `${widget.x * gridSize}px`,
     top: `${widget.y * gridSize}px`,
     width: `${widget.w * gridSize}px`,
