@@ -158,9 +158,9 @@ export const LeftNavRail: React.FC<LeftNavRailProps> = ({
                 gap: '10px',
                 padding: isCollapsed ? '9px 0' : '8px 10px',
                 justifyContent: isCollapsed ? 'center' : 'flex-start',
-                background: isActive ? 'var(--bg-card-hover)' : 'transparent',
+                background: isActive ? 'var(--military-green-surface)' : 'transparent',
                 border: 'none',
-                borderLeft: isActive ? '3px solid #94a3b8' : '3px solid transparent',
+                borderLeft: isActive ? '3px solid var(--military-green-border-focus)' : '3px solid transparent',
                 borderRadius: '2px',
                 color: isActive ? '#f1f5f9' : 'var(--text-secondary)',
                 cursor: 'pointer',
@@ -171,7 +171,7 @@ export const LeftNavRail: React.FC<LeftNavRailProps> = ({
               title={isCollapsed ? item.label : undefined}
             >
               <div style={{
-                color: isActive ? '#f1f5f9' : 'var(--text-muted)',
+                color: isActive ? 'var(--military-green-highlight)' : 'var(--text-muted)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',

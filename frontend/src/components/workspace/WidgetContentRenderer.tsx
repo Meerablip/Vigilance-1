@@ -592,7 +592,7 @@ const WorkspaceAuthDeskWidget: React.FC<WorkspaceAuthDeskWidgetProps> = ({
           style={{
             background: 'none',
             border: 'none',
-            color: '#38bdf8',
+            color: 'var(--military-green-text)',
             fontSize: '9px',
             cursor: 'pointer',
             display: 'flex',
@@ -681,10 +681,10 @@ const WorkspaceAuthDeskWidget: React.FC<WorkspaceAuthDeskWidgetProps> = ({
                   onClick={() => handleQuickDecision(item, 'approved')}
                   style={{
                     flex: 1,
-                    background: item.threat_level === 'L5' ? '#dc2626' : '#10b981',
-                    color: item.threat_level === 'L5' ? '#fff' : '#000',
+                    background: item.threat_level === 'L5' ? '#dc2626' : 'var(--military-green-border-focus)',
+                    border: '1px solid var(--military-green-accent)',
+                    color: '#fff',
                     fontWeight: 700,
-                    border: 'none',
                     padding: '4px',
                     borderRadius: '2px',
                     fontSize: '9px',
@@ -697,8 +697,8 @@ const WorkspaceAuthDeskWidget: React.FC<WorkspaceAuthDeskWidgetProps> = ({
                   onClick={() => handleQuickDecision(item, 'escalated')}
                   style={{
                     background: 'transparent',
-                    border: '1px solid #475569',
-                    color: '#cbd5e1',
+                    border: '1px solid var(--border-subtle)',
+                    color: 'var(--text-secondary)',
                     padding: '4px 6px',
                     borderRadius: '2px',
                     fontSize: '9px',
@@ -713,9 +713,9 @@ const WorkspaceAuthDeskWidget: React.FC<WorkspaceAuthDeskWidgetProps> = ({
                     onNavigate('authorization_queue');
                   }}
                   style={{
-                    background: '#1e293b',
-                    border: '1px solid #334155',
-                    color: '#38bdf8',
+                    background: 'var(--military-green-surface)',
+                    border: '1px solid var(--military-green-border)',
+                    color: 'var(--military-green-highlight)',
                     padding: '4px 6px',
                     borderRadius: '2px',
                     fontSize: '9px',
@@ -767,7 +767,7 @@ const WorkspaceConnectedSystemsWidget: React.FC<WorkspaceConnectedSystemsWidgetP
     <div style={{ height: '100%', padding: '10px', display: 'flex', flexDirection: 'column', gap: '8px', background: 'var(--bg-canvas)' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <Wifi size={13} color="#10b981" />
+          <Wifi size={13} color="var(--military-green-text)" />
           <strong style={{ fontSize: '11px', color: '#f8fafc', letterSpacing: '0.04em' }}>
             CONNECTED DEFENSE NETWORKS
           </strong>
@@ -777,7 +777,7 @@ const WorkspaceConnectedSystemsWidget: React.FC<WorkspaceConnectedSystemsWidgetP
           style={{
             background: 'none',
             border: 'none',
-            color: '#38bdf8',
+            color: 'var(--military-green-text)',
             fontSize: '9px',
             cursor: 'pointer',
             display: 'flex',
@@ -831,8 +831,8 @@ const WorkspaceConnectedSystemsWidget: React.FC<WorkspaceConnectedSystemsWidgetP
           <div
             key={msg.id}
             style={{
-              background: '#090d14',
-              border: '1px solid #1e2633',
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border-dim)',
               padding: '5px 7px',
               borderRadius: '2px',
               display: 'flex',
@@ -842,12 +842,12 @@ const WorkspaceConnectedSystemsWidget: React.FC<WorkspaceConnectedSystemsWidgetP
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Send size={10} color="#38bdf8" />
-              <span style={{ fontFamily: 'monospace', color: '#38bdf8' }}>{msg.id}</span>
-              <span style={{ color: '#94a3b8' }}>➔ {msg.incident_id}</span>
+              <Send size={10} color="var(--military-green-text)" />
+              <span style={{ fontFamily: 'monospace', color: 'var(--military-green-highlight)' }}>{msg.id}</span>
+              <span style={{ color: 'var(--text-muted)' }}>➔ {msg.incident_id}</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', padding: '1px 4px', borderRadius: '1px', fontWeight: 700, fontSize: '8px' }}>
+              <span style={{ background: 'var(--military-green-surface)', color: 'var(--military-green-highlight)', border: '1px solid var(--military-green-border)', padding: '1px 5px', borderRadius: '1px', fontWeight: 700, fontSize: '8px' }}>
                 ACK {msg.ack_latency_ms || 140}ms
               </span>
             </div>

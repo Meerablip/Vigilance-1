@@ -190,8 +190,8 @@ export const AuthorizationQueueDesk: React.FC<AuthorizationQueueDeskProps> = ({
         flex: 1, 
         display: 'flex', 
         flexDirection: 'column', 
-        background: '#090a0d', 
-        color: '#e2e8f0', 
+        background: 'var(--bg-canvas)', 
+        color: 'var(--text-primary)', 
         height: '100%',
         overflow: 'hidden'
       }}
@@ -200,8 +200,8 @@ export const AuthorizationQueueDesk: React.FC<AuthorizationQueueDeskProps> = ({
       <div 
         style={{
           height: '46px',
-          background: '#0d1117',
-          borderBottom: '1px solid #1e2633',
+          background: 'var(--bg-surface-elevated)',
+          borderBottom: '1px solid var(--border-subtle)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -210,15 +210,15 @@ export const AuthorizationQueueDesk: React.FC<AuthorizationQueueDeskProps> = ({
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <ClipboardCheck size={18} color="#38bdf8" />
+          <ClipboardCheck size={18} color="var(--military-green-text)" />
           <h2 style={{ fontSize: '14px', fontWeight: 700, letterSpacing: '0.04em', margin: 0 }}>
             COMMANDER HUMAN-IN-THE-LOOP (HITL) AUTHORIZATION DESK
           </h2>
           <span 
             style={{
-              background: 'rgba(56, 189, 248, 0.12)',
-              border: '1px solid rgba(56, 189, 248, 0.3)',
-              color: '#38bdf8',
+              background: 'var(--military-green-surface)',
+              border: '1px solid var(--military-green-border)',
+              color: 'var(--military-green-highlight)',
               fontSize: '10px',
               fontWeight: 700,
               padding: '2px 8px',
@@ -257,8 +257,8 @@ export const AuthorizationQueueDesk: React.FC<AuthorizationQueueDeskProps> = ({
         {/* Left Priority-Ranked Incident Queue */}
         <div 
           style={{ 
-            borderRight: '1px solid #1e2633', 
-            background: '#0a0d14', 
+            borderRight: '1px solid var(--border-subtle)', 
+            background: 'var(--bg-subtle)', 
             display: 'flex', 
             flexDirection: 'column',
             overflowY: 'auto'
@@ -267,11 +267,11 @@ export const AuthorizationQueueDesk: React.FC<AuthorizationQueueDeskProps> = ({
           <div 
             style={{ 
               padding: '10px 14px', 
-              background: '#0d1017', 
-              borderBottom: '1px solid #1e2633',
+              background: 'var(--bg-surface)', 
+              borderBottom: '1px solid var(--border-subtle)',
               fontSize: '10px',
               fontWeight: 700,
-              color: '#64748b',
+              color: 'var(--text-muted)',
               letterSpacing: '0.05em',
               textTransform: 'uppercase'
             }}
@@ -303,9 +303,9 @@ export const AuthorizationQueueDesk: React.FC<AuthorizationQueueDeskProps> = ({
                   }}
                   style={{
                     padding: '12px 14px',
-                    borderBottom: '1px solid #17202e',
-                    background: isSelected ? 'rgba(56, 189, 248, 0.08)' : 'transparent',
-                    borderLeft: isSelected ? '3px solid #38bdf8' : '3px solid transparent',
+                    borderBottom: '1px solid var(--border-dim)',
+                    background: isSelected ? 'var(--military-green-surface)' : 'transparent',
+                    borderLeft: isSelected ? '3px solid var(--military-green-border-focus)' : '3px solid transparent',
                     cursor: 'pointer',
                     transition: 'background 0.12s ease'
                   }}
@@ -343,7 +343,7 @@ export const AuthorizationQueueDesk: React.FC<AuthorizationQueueDeskProps> = ({
 
         {/* Right Decision Dossier & Evidence Review Panel */}
         {selectedItem ? (
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#090a0d', overflowY: 'auto', padding: '20px 24px' }}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--bg-canvas)', overflowY: 'auto', padding: '20px 24px' }}>
             
             {/* Dossier Header */}
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '16px' }}>
@@ -536,10 +536,10 @@ export const AuthorizationQueueDesk: React.FC<AuthorizationQueueDeskProps> = ({
                 onClick={() => handleDecision('approved')}
                 disabled={isSubmitting}
                 style={{
-                  flex: 1.2,
-                  background: '#10b981',
-                  border: 'none',
-                  color: '#000',
+                  flex: 1.3,
+                  background: 'var(--military-green-border-focus)',
+                  border: '1px solid var(--military-green-accent)',
+                  color: '#fff',
                   fontWeight: 800,
                   fontSize: '11px',
                   padding: '10px 16px',
@@ -548,7 +548,8 @@ export const AuthorizationQueueDesk: React.FC<AuthorizationQueueDeskProps> = ({
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '6px'
+                  gap: '6px',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.5)'
                 }}
               >
                 <Check size={14} />
@@ -560,9 +561,9 @@ export const AuthorizationQueueDesk: React.FC<AuthorizationQueueDeskProps> = ({
                 disabled={isSubmitting}
                 style={{
                   flex: 1,
-                  background: '#2563eb',
-                  border: 'none',
-                  color: '#fff',
+                  background: '#854d0e',
+                  border: '1px solid #ca8a04',
+                  color: '#fef08a',
                   fontWeight: 700,
                   fontSize: '11px',
                   padding: '10px 14px',
@@ -583,9 +584,9 @@ export const AuthorizationQueueDesk: React.FC<AuthorizationQueueDeskProps> = ({
                 disabled={isSubmitting}
                 style={{
                   flex: 1,
-                  background: '#1e293b',
-                  border: '1px solid #334155',
-                  color: '#cbd5e1',
+                  background: 'var(--military-green-surface)',
+                  border: '1px solid var(--military-green-border)',
+                  color: 'var(--military-green-highlight)',
                   fontWeight: 700,
                   fontSize: '11px',
                   padding: '10px 14px',

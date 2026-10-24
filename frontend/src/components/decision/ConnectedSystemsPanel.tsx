@@ -159,8 +159,8 @@ export const ConnectedSystemsPanel: React.FC = () => {
         flex: 1, 
         display: 'flex', 
         flexDirection: 'column', 
-        background: '#090a0d', 
-        color: '#e2e8f0', 
+        background: 'var(--bg-canvas)', 
+        color: 'var(--text-primary)', 
         height: '100%',
         overflowY: 'auto',
         padding: '20px 24px'
@@ -169,12 +169,12 @@ export const ConnectedSystemsPanel: React.FC = () => {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <Radio size={20} color="#38bdf8" />
+          <Radio size={20} color="var(--military-green-text)" />
           <div>
             <h2 style={{ fontSize: '15px', fontWeight: 700, margin: 0, letterSpacing: '0.04em' }}>
               CONNECTED MILITARY DEFENSE SYSTEMS & DISPATCH LEDGER
             </h2>
-            <div style={{ fontSize: '11px', color: '#64748b' }}>
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
               Real-time telemetry, mock Link-16 tactical data exchange, and autonomous L1/L2 delivery receipts.
             </div>
           </div>
@@ -227,8 +227,8 @@ export const ConnectedSystemsPanel: React.FC = () => {
           <div 
             key={sys.id} 
             style={{ 
-              background: '#0d1117', 
-              border: '1px solid #1e2633', 
+              background: 'var(--bg-card)', 
+              border: '1px solid var(--border-subtle)', 
               borderRadius: '3px', 
               padding: '14px',
               display: 'flex',
@@ -274,21 +274,21 @@ export const ConnectedSystemsPanel: React.FC = () => {
               disabled={pingTarget === sys.name}
               style={{
                 marginTop: '12px',
-                background: pingTarget === sys.name ? '#0284c7' : '#1e293b',
-                border: '1px solid #334155',
-                color: '#f8fafc',
+                background: pingTarget === sys.name ? 'var(--military-green-border-focus)' : 'var(--military-green-surface)',
+                border: '1px solid var(--military-green-border)',
+                color: 'var(--military-green-highlight)',
                 fontSize: '10px',
                 fontWeight: 700,
-                padding: '5px',
+                padding: '6px',
                 borderRadius: '2px',
-                cursor: 'pointer',
+                cursor: pingTarget === sys.name ? 'wait' : 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '4px'
               }}
             >
-              <Zap size={11} color="#38bdf8" />
+              <Zap size={11} color="var(--military-green-highlight)" />
               <span>{pingTarget === sys.name ? 'TESTING LINK...' : 'PING NETWORK'}</span>
             </button>
           </div>
@@ -296,16 +296,16 @@ export const ConnectedSystemsPanel: React.FC = () => {
       </div>
 
       {/* Military Message Dispatch Ledger */}
-      <div style={{ background: '#0d1117', border: '1px solid #1e2633', borderRadius: '3px', padding: '16px', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: '3px', padding: '16px', display: 'flex', flexDirection: 'column' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Layers size={14} color="#38bdf8" />
+            <Layers size={14} color="var(--military-green-text)" />
             <span style={{ fontSize: '12px', fontWeight: 700, color: '#f8fafc', textTransform: 'uppercase' }}>
               CHRONOLOGICAL PACKET DISPATCH LEDGER ({messages.length} TRANSMISSIONS)
             </span>
           </div>
 
-          <span style={{ fontSize: '10px', color: '#10b981', fontFamily: 'monospace' }}>
+          <span style={{ fontSize: '10px', color: 'var(--military-green-text)', fontFamily: 'monospace' }}>
             ● LINK-16 BUS ACTIVE • 140ms ACK AVERAGE
           </span>
         </div>
@@ -318,7 +318,7 @@ export const ConnectedSystemsPanel: React.FC = () => {
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px', textAlign: 'left' }}>
               <thead>
-                <tr style={{ borderBottom: '1px solid #1e2633', color: '#64748b', fontSize: '9px', textTransform: 'uppercase' }}>
+                <tr style={{ borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-muted)', fontSize: '9px', textTransform: 'uppercase' }}>
                   <th style={{ padding: '8px 10px' }}>Packet ID</th>
                   <th style={{ padding: '8px 10px' }}>Incident Link</th>
                   <th style={{ padding: '8px 10px' }}>Destination System</th>
@@ -329,28 +329,28 @@ export const ConnectedSystemsPanel: React.FC = () => {
               </thead>
               <tbody>
                 {messages.map((m) => (
-                  <tr key={m.id} style={{ borderBottom: '1px solid #141822', color: '#cbd5e1' }}>
-                    <td style={{ padding: '8px 10px', fontFamily: 'monospace', color: '#38bdf8', fontWeight: 700 }}>
+                  <tr key={m.id} style={{ borderBottom: '1px solid var(--border-dim)', color: 'var(--text-secondary)' }}>
+                    <td style={{ padding: '8px 10px', fontFamily: 'monospace', color: 'var(--military-green-highlight)', fontWeight: 700 }}>
                       {m.id}
                     </td>
                     <td style={{ padding: '8px 10px', fontFamily: 'monospace', color: '#f8fafc' }}>
                       {m.incident_id}
                     </td>
-                    <td style={{ padding: '8px 10px', color: '#94a3b8' }}>
+                    <td style={{ padding: '8px 10px', color: 'var(--text-secondary)' }}>
                       {m.destination_system}
                     </td>
                     <td style={{ padding: '8px 10px', maxWidth: '320px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {m.payload?.justification || m.payload?.summary || JSON.stringify(m.payload)}
                     </td>
-                    <td style={{ padding: '8px 10px', fontSize: '10px', color: '#64748b', fontFamily: 'monospace' }}>
+                    <td style={{ padding: '8px 10px', fontSize: '10px', color: 'var(--text-muted)', fontFamily: 'monospace' }}>
                       {new Date(m.created_at).toLocaleTimeString()}
                     </td>
                     <td style={{ padding: '8px 10px' }}>
                       <span 
                         style={{
-                          background: 'rgba(16, 185, 129, 0.15)',
-                          border: '1px solid #10b981',
-                          color: '#10b981',
+                          background: 'var(--military-green-surface)',
+                          border: '1px solid var(--military-green-border)',
+                          color: 'var(--military-green-highlight)',
                           fontSize: '9px',
                           fontWeight: 700,
                           padding: '2px 6px',

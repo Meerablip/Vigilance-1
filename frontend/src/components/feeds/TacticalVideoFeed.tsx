@@ -675,8 +675,8 @@ export const TacticalVideoFeed: React.FC<TacticalVideoFeedProps> = ({
       {/* Floating Interactive Control Strip */}
       <div 
         style={{
-          background: '#0d1017',
-          borderTop: '1px solid #1e2633',
+          background: 'var(--bg-surface-elevated)',
+          borderTop: '1px solid var(--border-subtle)',
           padding: '6px 10px',
           display: 'flex',
           alignItems: 'center',
@@ -689,7 +689,7 @@ export const TacticalVideoFeed: React.FC<TacticalVideoFeedProps> = ({
       >
         {/* FLIR Thermal Palette Selector */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <span style={{ fontSize: '9px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>
+          <span style={{ fontSize: '9px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
             FLIR Palette:
           </span>
           {(['EO', 'White-Hot', 'Black-Hot', 'Ironbow', 'NVG Green'] as ThermalPalette[]).map((p) => (
@@ -697,9 +697,9 @@ export const TacticalVideoFeed: React.FC<TacticalVideoFeedProps> = ({
               key={p}
               onClick={() => setPalette(p)}
               style={{
-                background: palette === p ? '#2563eb' : '#1e293b',
-                border: `1px solid ${palette === p ? '#60a5fa' : '#334155'}`,
-                color: palette === p ? '#fff' : '#94a3b8',
+                background: palette === p ? 'var(--military-green-border-focus)' : 'var(--bg-card)',
+                border: `1px solid ${palette === p ? 'var(--military-green-accent)' : 'var(--border-subtle)'}`,
+                color: palette === p ? '#fff' : 'var(--text-secondary)',
                 padding: '2px 7px',
                 borderRadius: '2px',
                 fontSize: '9px',
@@ -717,9 +717,9 @@ export const TacticalVideoFeed: React.FC<TacticalVideoFeedProps> = ({
           <button
             onClick={() => setShowYoloBoxes(!showYoloBoxes)}
             style={{
-              background: showYoloBoxes ? 'rgba(56, 189, 248, 0.15)' : 'transparent',
-              border: `1px solid ${showYoloBoxes ? '#38bdf8' : '#334155'}`,
-              color: showYoloBoxes ? '#38bdf8' : '#64748b',
+              background: showYoloBoxes ? 'var(--military-green-surface)' : 'transparent',
+              border: `1px solid ${showYoloBoxes ? 'var(--military-green-border-focus)' : 'var(--border-subtle)'}`,
+              color: showYoloBoxes ? 'var(--military-green-highlight)' : 'var(--text-muted)',
               fontSize: '9px',
               fontWeight: 700,
               padding: '2px 7px',

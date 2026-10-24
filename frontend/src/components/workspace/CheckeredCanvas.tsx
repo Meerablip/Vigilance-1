@@ -478,8 +478,8 @@ export const CheckeredCanvas: React.FC<CheckeredCanvasProps> = ({
           overflow: 'hidden',
           cursor: isSpacePressed || isPanning ? 'grabbing' : 'default',
           backgroundPosition: `${panOffset.x}px ${panOffset.y}px`,
-          backgroundSize: `${GRID_SIZE * zoom}px ${GRID_SIZE * zoom}px`,
-          outline: isDragOver ? '2px dashed var(--border-active)' : 'none'
+          backgroundSize: `${GRID_SIZE * 5 * zoom}px ${GRID_SIZE * 5 * zoom}px, ${GRID_SIZE * 5 * zoom}px ${GRID_SIZE * 5 * zoom}px, ${GRID_SIZE * zoom}px ${GRID_SIZE * zoom}px, ${GRID_SIZE * zoom}px ${GRID_SIZE * zoom}px`,
+          outline: isDragOver ? '2px dashed var(--military-green-border-focus)' : 'none'
         }}
         onWheel={handleWheel}
         onMouseDown={handleMouseDown}
@@ -566,9 +566,9 @@ export const CheckeredCanvas: React.FC<CheckeredCanvasProps> = ({
                   });
                 }}
                 style={{
-                  background: '#1e293b',
-                  border: '1px solid #38bdf8',
-                  color: '#f8fafc',
+                  background: '#131417',
+                  border: '1px solid var(--military-green-border)',
+                  color: 'var(--military-green-text)',
                   fontSize: '9px',
                   fontWeight: 600,
                   padding: '3px 8px',
@@ -582,7 +582,7 @@ export const CheckeredCanvas: React.FC<CheckeredCanvasProps> = ({
                 title={`Click to restore ${w.title}`}
               >
                 <span>{w.title}</span>
-                <Maximize2 size={10} color="#38bdf8" />
+                <Maximize2 size={10} color="var(--military-green-text)" />
               </button>
             ))}
           </div>
@@ -594,10 +594,10 @@ export const CheckeredCanvas: React.FC<CheckeredCanvasProps> = ({
             position: 'absolute',
             bottom: '12px',
             right: '12px',
-            background: 'rgba(9, 11, 16, 0.92)',
-            border: '1px solid #1e2633',
+            background: 'rgba(16, 18, 22, 0.95)',
+            border: '1px solid var(--military-green-border)',
             borderRadius: '3px',
-            boxShadow: '0 6px 20px rgba(0, 0, 0, 0.7)',
+            boxShadow: 'var(--shadow-panel)',
             zIndex: 300,
             overflow: 'hidden',
             display: 'flex',
@@ -609,17 +609,17 @@ export const CheckeredCanvas: React.FC<CheckeredCanvasProps> = ({
           <div 
             style={{
               height: '24px',
-              background: '#0d1117',
-              borderBottom: '1px solid #1e2633',
+              background: '#141518',
+              borderBottom: '1px solid var(--border-subtle)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
               padding: '0 8px',
               fontSize: '9px',
-              color: '#94a3b8'
+              color: 'var(--text-muted)'
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 700, color: '#38bdf8' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 700, color: 'var(--military-green-text)' }}>
               <Compass size={11} />
               <span>RADAR NAVIGATOR</span>
             </div>
@@ -664,16 +664,16 @@ export const CheckeredCanvas: React.FC<CheckeredCanvasProps> = ({
               <div 
                 style={{
                   height: '90px',
-                  background: '#04060a',
-                  border: '1px solid #1e2633',
+                  background: '#0a0b0d',
+                  border: '1px solid var(--border-subtle)',
                   borderRadius: '2px',
                   position: 'relative',
                   overflow: 'hidden'
                 }}
               >
                 {/* Radar Grid Lines */}
-                <div style={{ position: 'absolute', top: '50%', left: 0, right: 0, height: '1px', background: 'rgba(56, 189, 248, 0.15)' }} />
-                <div style={{ position: 'absolute', left: '50%', top: 0, bottom: 0, width: '1px', background: 'rgba(56, 189, 248, 0.15)' }} />
+                <div style={{ position: 'absolute', top: '50%', left: 0, right: 0, height: '1px', background: 'rgba(42, 71, 54, 0.4)' }} />
+                <div style={{ position: 'absolute', left: '50%', top: 0, bottom: 0, width: '1px', background: 'rgba(42, 71, 54, 0.4)' }} />
 
                 {/* Render Miniature Modules */}
                 {widgets.map((w) => {
@@ -690,8 +690,8 @@ export const CheckeredCanvas: React.FC<CheckeredCanvasProps> = ({
                         top: `${Math.max(2, miniY)}px`,
                         width: `${miniW}px`,
                         height: `${miniH}px`,
-                        background: w.isMinimized ? 'rgba(56, 189, 248, 0.2)' : 'rgba(56, 189, 248, 0.45)',
-                        border: '1px solid rgba(56, 189, 248, 0.8)',
+                        background: w.isMinimized ? 'rgba(54, 97, 71, 0.2)' : 'rgba(54, 97, 71, 0.5)',
+                        border: '1px solid var(--military-green-border)',
                         borderRadius: '1px'
                       }}
                     />
@@ -706,29 +706,29 @@ export const CheckeredCanvas: React.FC<CheckeredCanvasProps> = ({
                     top: `${Math.max(0, Math.min(60, -panOffset.y * 0.08))}px`,
                     width: `${Math.max(30, 80 / zoom)}px`,
                     height: `${Math.max(20, 50 / zoom)}px`,
-                    border: '1.5px solid #22c55e',
-                    background: 'rgba(34, 197, 94, 0.1)',
+                    border: '1.5px solid var(--military-green-border-focus)',
+                    background: 'rgba(42, 71, 54, 0.25)',
                     pointerEvents: 'none'
                   }}
                 />
               </div>
 
               {/* Coordinates and Zoom Controls */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '9px', color: '#94a3b8' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '9px', color: 'var(--text-muted)' }}>
                 <span style={{ fontFamily: 'monospace' }}>
                   X: {Math.round(-panOffset.x)} Y: {Math.round(-panOffset.y)}
                 </span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
                   <button
                     onClick={() => setZoom(prev => Math.max(0.4, prev - 0.1))}
-                    style={{ background: '#1e293b', border: '1px solid #334155', color: '#fff', borderRadius: '2px', padding: '1px 4px', cursor: 'pointer' }}
+                    style={{ background: '#181a1f', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', borderRadius: '2px', padding: '1px 4px', cursor: 'pointer' }}
                   >
                     <ZoomOut size={9} />
                   </button>
-                  <span style={{ fontFamily: 'monospace', color: '#38bdf8' }}>{Math.round(zoom * 100)}%</span>
+                  <span style={{ fontFamily: 'monospace', color: 'var(--military-green-text)' }}>{Math.round(zoom * 100)}%</span>
                   <button
                     onClick={() => setZoom(prev => Math.min(1.6, prev + 0.1))}
-                    style={{ background: '#1e293b', border: '1px solid #334155', color: '#fff', borderRadius: '2px', padding: '1px 4px', cursor: 'pointer' }}
+                    style={{ background: '#181a1f', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', borderRadius: '2px', padding: '1px 4px', cursor: 'pointer' }}
                   >
                     <ZoomIn size={9} />
                   </button>

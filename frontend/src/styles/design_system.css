@@ -1,28 +1,37 @@
 :root {
-  /* Matte Military Graphite Palette */
-  --bg-canvas: #090a0d;
-  --bg-subtle: #0f1115;
-  --bg-surface: #14171d;
-  --bg-surface-elevated: #191d24;
-  --bg-card: #15181f;
-  --bg-card-hover: #1c212a;
+  /* Pure Matte Defense Graphite Palette (Charcoal / Carbon / Graphite Black) */
+  --bg-canvas: #0a0b0d;
+  --bg-subtle: #101114;
+  --bg-surface: #141518;
+  --bg-surface-elevated: #181a1f;
+  --bg-card: #131417;
+  --bg-card-hover: #1c1e23;
 
   /* Restrained Crisp Borders */
-  --border-dim: #1c2028;
-  --border-subtle: #242933;
-  --border-focus: #353c4a;
-  --border-active: #485264;
+  --border-dim: #1d1e23;
+  --border-subtle: #25272e;
+  --border-focus: #353842;
+  --border-active: #474b57;
 
   /* Typography */
-  --text-primary: #dbe1eb;
-  --text-secondary: #8c96a8;
-  --text-muted: #5a6475;
+  --text-primary: #e1e4ea;
+  --text-secondary: #969ca8;
+  --text-muted: #616773;
   --text-inverse: #050608;
 
-  /* Restrained Tactical Colors (Muted, Matte, Military) */
-  --accent-tactical: #64748b;
-  --accent-tactical-active: #94a3b8;
-  --accent-tactical-subtle: rgba(148, 163, 184, 0.08);
+  /* Deep Military Bottle Green Tactical Tokens (Authoritative, Restrained, Non-Showy) */
+  --military-green-base: #132219;
+  --military-green-surface: #182c20;
+  --military-green-border: #274734;
+  --military-green-border-focus: #366147;
+  --military-green-accent: #457c5a;
+  --military-green-text: #84b699;
+  --military-green-highlight: #a4cbb4;
+
+  /* Restrained Tactical Colors */
+  --accent-tactical: #616773;
+  --accent-tactical-active: #969ca8;
+  --accent-tactical-subtle: rgba(40, 72, 53, 0.12);
 
   /* Five Threat Levels (Muted Tactical, Zero Glowing Neon) */
   --threat-l1: #60a5fa; /* Low - Subdued Slate Blue */
@@ -37,19 +46,21 @@
   --threat-l5-bg: rgba(220, 38, 38, 0.1);
 
   /* Status */
-  --status-healthy: #10b981;
+  --status-healthy: #366147;
+  --status-healthy-text: #84b699;
   --status-warning: #f59e0b;
   --status-critical: #ef4444;
-  --status-offline: #475569;
+  --status-offline: #474b57;
 
-  /* Subtle Canvas Grid */
+  /* Bold Military Checkered Canvas Grid (Deep Bottle Green Lines) */
   --grid-size: 24px;
-  --grid-line-color: rgba(255, 255, 255, 0.02);
+  --grid-line-color: rgba(40, 72, 53, 0.38);
+  --grid-line-major: rgba(54, 98, 72, 0.68);
 
   /* Clean Shadows without glow */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 3px 8px rgba(0, 0, 0, 0.5);
-  --shadow-panel: 0 4px 16px rgba(0, 0, 0, 0.6);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.6);
+  --shadow-md: 0 3px 8px rgba(0, 0, 0, 0.7);
+  --shadow-panel: 0 4px 18px rgba(0, 0, 0, 0.85);
 
   /* Dimensions */
   --topbar-height: 48px;
@@ -99,13 +110,15 @@ html, body {
   background: var(--border-focus);
 }
 
-/* Subtle Canvas Grid */
+/* Bold Military Bottle Green Checkered Canvas Grid */
 .checkered-canvas {
   background-color: var(--bg-canvas);
   background-image: 
+    linear-gradient(to right, var(--grid-line-major) 1.5px, transparent 1.5px),
+    linear-gradient(to bottom, var(--grid-line-major) 1.5px, transparent 1.5px),
     linear-gradient(to right, var(--grid-line-color) 1px, transparent 1px),
     linear-gradient(to bottom, var(--grid-line-color) 1px, transparent 1px);
-  background-size: var(--grid-size) var(--grid-size);
+  background-size: 120px 120px, 120px 120px, var(--grid-size) var(--grid-size), var(--grid-size) var(--grid-size);
   position: relative;
   overflow: hidden;
 }
@@ -122,11 +135,11 @@ html, body {
 }
 
 .modular-panel:hover {
-  border-color: var(--border-focus);
+  border-color: var(--military-green-border);
 }
 
 .modular-panel.panel-focused {
-  border-color: var(--border-active);
+  border-color: var(--military-green-border-focus);
 }
 
 .panel-header {
@@ -140,6 +153,10 @@ html, body {
   padding: 0 8px;
   user-select: none;
   cursor: grab;
+}
+
+.modular-panel.panel-focused .panel-header {
+  border-left: 2px solid var(--military-green-accent);
 }
 
 .panel-header:active {

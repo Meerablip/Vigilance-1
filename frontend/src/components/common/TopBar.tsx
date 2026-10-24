@@ -90,8 +90,8 @@ export const TopBar: React.FC<TopBarProps> = ({
           <div style={{
             width: '32px',
             height: '32px',
-            background: '#1a1f29',
-            border: '1px solid #323a49',
+            background: 'var(--bg-card)',
+            border: '1px solid var(--military-green-border)',
             borderRadius: '3px',
             display: 'flex',
             alignItems: 'center',
@@ -101,7 +101,7 @@ export const TopBar: React.FC<TopBarProps> = ({
               fontFamily: "'Impact', 'Arial Black', -apple-system, sans-serif",
               fontSize: '22px',
               fontWeight: 900,
-              color: '#e2e8f0',
+              color: 'var(--military-green-highlight)',
               lineHeight: 1,
               letterSpacing: '-1px'
             }}>
@@ -241,9 +241,9 @@ export const TopBar: React.FC<TopBarProps> = ({
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
-              background: isSimulating ? '#1e293b' : '#042f2e',
-              border: isSimulating ? '1px solid #475569' : '1px solid #0d9488',
-              color: isSimulating ? '#94a3b8' : '#2dd4bf',
+              background: isSimulating ? 'var(--bg-card)' : 'var(--military-green-surface)',
+              border: isSimulating ? '1px solid var(--border-subtle)' : '1px solid var(--military-green-border)',
+              color: isSimulating ? 'var(--text-muted)' : 'var(--military-green-highlight)',
               borderRadius: '2px',
               padding: '0 10px',
               height: '28px',

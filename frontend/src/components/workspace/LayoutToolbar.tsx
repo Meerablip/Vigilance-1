@@ -82,17 +82,18 @@ export const LayoutToolbar: React.FC<LayoutToolbarProps> = ({
             alignItems: 'center',
             gap: '5px',
             background: 'var(--bg-card)',
-            border: '1px solid var(--border-focus)',
+            border: '1px solid var(--military-green-border)',
             color: 'var(--text-primary)',
-            padding: '3px 7px',
+            padding: '3px 8px',
             borderRadius: '2px',
             fontSize: '10px',
-            fontWeight: 600,
-            cursor: 'pointer'
+            fontWeight: 700,
+            cursor: 'pointer',
+            letterSpacing: '0.04em'
           }}
           title="Open Library to drag modules onto the workspace"
         >
-          <Layers size={11} />
+          <Layers size={11} color="var(--military-green-text)" />
           <span>MODULES</span>
         </button>
 

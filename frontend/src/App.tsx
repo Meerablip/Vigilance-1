@@ -154,7 +154,7 @@ export const App: React.FC = () => {
     switch (currentPage) {
       case 'map':
         return (
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#090A0D', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--bg-canvas)', position: 'relative', overflow: 'hidden' }}>
             <PrecisionIndiaMap
               compact={false}
               onSelectIncident={(incId) => {
@@ -169,12 +169,12 @@ export const App: React.FC = () => {
 
       case 'live_feeds':
         return (
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#090a0d', color: '#e2e8f0', overflow: 'hidden' }}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--bg-canvas)', color: 'var(--text-primary)', overflow: 'hidden' }}>
             {/* Header Toolbar */}
             <div style={{
               height: '42px',
-              background: '#0d1117',
-              borderBottom: '1px solid #1e2633',
+              background: 'var(--bg-surface-elevated)',
+              borderBottom: '1px solid var(--border-subtle)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
@@ -182,14 +182,14 @@ export const App: React.FC = () => {
               flexShrink: 0
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <Video size={16} color="#38bdf8" />
+                <Video size={16} color="var(--military-green-text)" />
                 <h2 style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '0.04em', margin: 0, textTransform: 'uppercase' }}>
                   TACTICAL SURVEILLANCE & UAV RECONNAISSANCE WALL
                 </h2>
                 <span style={{
-                  background: 'rgba(56, 189, 248, 0.1)',
-                  border: '1px solid rgba(56, 189, 248, 0.25)',
-                  color: '#38bdf8',
+                  background: 'var(--military-green-surface)',
+                  border: '1px solid var(--military-green-border)',
+                  color: 'var(--military-green-highlight)',
                   fontSize: '9px',
                   padding: '2px 6px',
                   borderRadius: '2px',
@@ -200,16 +200,16 @@ export const App: React.FC = () => {
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div style={{ display: 'flex', background: '#1e293b', borderRadius: '2px', border: '1px solid #334155' }}>
+                <div style={{ display: 'flex', background: 'var(--bg-card)', borderRadius: '2px', border: '1px solid var(--border-subtle)' }}>
                   <button
                     onClick={() => {
                       setFeedsViewMode('grid');
                       setSoloFeedId(null);
                     }}
                     style={{
-                      background: feedsViewMode === 'grid' ? '#0284c7' : 'transparent',
+                      background: feedsViewMode === 'grid' ? 'var(--military-green-border-focus)' : 'transparent',
                       border: 'none',
-                      color: feedsViewMode === 'grid' ? '#fff' : '#94a3b8',
+                      color: feedsViewMode === 'grid' ? '#fff' : 'var(--text-muted)',
                       padding: '4px 8px',
                       fontSize: '10px',
                       fontWeight: 700,
@@ -228,9 +228,9 @@ export const App: React.FC = () => {
                       if (!soloFeedId) setSoloFeedId('CAM-NORTH-04');
                     }}
                     style={{
-                      background: feedsViewMode === 'solo' ? '#0284c7' : 'transparent',
+                      background: feedsViewMode === 'solo' ? 'var(--military-green-border-focus)' : 'transparent',
                       border: 'none',
-                      color: feedsViewMode === 'solo' ? '#fff' : '#94a3b8',
+                      color: feedsViewMode === 'solo' ? '#fff' : 'var(--text-muted)',
                       padding: '4px 8px',
                       fontSize: '10px',
                       fontWeight: 700,
@@ -286,14 +286,14 @@ export const App: React.FC = () => {
                 gridTemplateRows: 'repeat(2, 1fr)',
                 gap: '4px',
                 padding: '4px',
-                background: '#04060a'
+                background: 'var(--bg-canvas)'
               }}>
                 {TACTICAL_FEEDS.map((f) => (
                   <div 
                     key={f.id} 
                     style={{ 
                       position: 'relative', 
-                      border: '1px solid #1e2633', 
+                      border: '1px solid var(--border-subtle)', 
                       borderRadius: '2px', 
                       overflow: 'hidden',
                       display: 'flex',
